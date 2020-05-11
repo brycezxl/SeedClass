@@ -38,7 +38,8 @@ class Runner:
 
     def _build_model(self):
         # self.model = Simple(num_classes=self.classes)
-        self.model = AlexNet(num_classes=self.classes)
+        # self.model = AlexNet(num_classes=self.classes)
+        self.model = Efficient(self.classes)
 
         self.device = torch.device('cuda:0')
         self.model = self.model.to(self.device)

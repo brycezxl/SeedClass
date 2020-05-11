@@ -13,20 +13,31 @@ class DataSet(data.Dataset):
         self.path = "../corel_5k/"
         self._load_labels()
         self._load_images()
+
+        # self.transforms_train = transforms.Compose([
+        #     # transforms.RandomChoice([
+        #         transforms.Resize((64, 64)),
+        #         # transforms.RandomResizedCrop(64),
+        #     # ]),
+        #     # transforms.RandomHorizontalFlip(),
+        #     # transforms.RandomApply([transforms.ColorJitter()]),
+        #     transforms.ToTensor(),
+        #     # transforms.Normalize((0.3854, 0.4005, 0.3472), (0.2183, 0.2078, 0.2003)),
+        # ])
+        # self.transforms_test = transforms.Compose([
+        #     transforms.Resize((64, 64)),
+        #     transforms.ToTensor(),
+        #     # transforms.Normalize((0.3854, 0.4005, 0.3472), (0.2183, 0.2078, 0.2003)),
+        # ])
         self.transforms_train = transforms.Compose([
-            # transforms.RandomChoice([
-                transforms.Resize((64, 64)),
-                # transforms.RandomResizedCrop(64),
-            # ]),
-            # transforms.RandomHorizontalFlip(),
-            # transforms.RandomApply([transforms.ColorJitter()]),
+            transforms.Resize((224, 224)),
             transforms.ToTensor(),
-            transforms.Normalize((0.3861, 0.4012, 0.3479), (0.2014, 0.1901, 0.1827)),
+            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
         ])
         self.transforms_test = transforms.Compose([
-            transforms.Resize((64, 64)),
+            transforms.Resize((224, 224)),
             transforms.ToTensor(),
-            transforms.Normalize((0.3861, 0.4012, 0.3479), (0.2014, 0.1901, 0.1827)),
+            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
         ])
 
     def _load_labels(self):
@@ -77,4 +88,4 @@ class DataSet(data.Dataset):
         return img, d[1], d[2], d[3], d[4], d[5]
 
     def __len__(self):
-        return len(self.data) - 1
+        return len(self.data)

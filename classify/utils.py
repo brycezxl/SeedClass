@@ -105,7 +105,7 @@ def image_analysis():
             img = os.path.join(class_path, img_name)
             img = Image.open(img)
             transform = transforms.Compose([
-                transforms.Resize((64, 64)),
+                # transforms.Resize((64, 64)),
                 transforms.ToTensor(),
             ])
             img = transform(img)
@@ -116,7 +116,8 @@ def image_analysis():
     for i in range(3):
         means[i] = means[i] / count
         std[i] = std[i] / count
-    print(means, std)
+    print('means:', means)
+    print('std:', std)
 
 
 if __name__ == '__main__':

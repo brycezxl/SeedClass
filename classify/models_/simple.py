@@ -19,5 +19,4 @@ class Simple(nn.Module):
         x = f.relu(self.fc1(x))
         x = f.relu(self.fc2(x))
         x = self.fc3(x)
-        x = f.softmax(x, dim=1)
         return x

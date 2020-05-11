@@ -10,7 +10,7 @@ def parse_args():
                         help='evaluate the model on dev set')
     parser.add_argument('--model-saved-path', type=str, default='results/model',
                         help='')
-    parser.add_argument('--batch-size', type=int, default=32,
+    parser.add_argument('--batch-size', type=int, default=2,
                         help='')
     parser.add_argument('--dropout', type=float, default=0.2,
                         help='')
