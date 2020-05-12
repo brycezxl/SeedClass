@@ -3,12 +3,12 @@ import torch.nn.functional as f
 
 
 class Embedding(nn.Module):
-    def __init__(self, d_model):
+    def __init__(self, args):
         super(Embedding, self).__init__()
-        self.emb = nn.Embedding(51, d_model)
+        self.args = args
+        self.emb = nn.Embedding(50, args.d_model)
 
-    def forward(self, x, mask):
+    def forward(self, x):
         x = self.emb(x)
-        x = x * mask.unsqueeze(-1)
         x = f.dropout(x, self.args.dropout, self.training)
         return x

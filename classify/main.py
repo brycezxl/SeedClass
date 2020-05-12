@@ -10,13 +10,13 @@ def parse_args():
                         help='evaluate the model on dev set')
     parser.add_argument('--model-saved-path', type=str, default='results/model',
                         help='')
-    parser.add_argument('--batch-size', type=int, default=2,
+    parser.add_argument('--batch-size', type=int, default=8,
                         help='')
     parser.add_argument('--dropout', type=float, default=0.2,
                         help='')
     parser.add_argument('--max-num-epochs', type=int, default=50,
                         help='')
-    parser.add_argument('--d-model', type=int, default=300,
+    parser.add_argument('--d-model', type=int, default=512,
                         help='')
     parser.add_argument('--lr', default=1e-4, type=float,
                         help='learning rate')

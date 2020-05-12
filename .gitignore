@@ -9,3 +9,5 @@ results
 experiment.py
 nohup.out
 rec.txt
+paper
+.DS_Store

@@ -1,9 +1,14 @@
 from torch import nn
+from models_.embedding import Embedding
+import torch
+import torch.nn.functional as f
 
 
 class AlexNet(nn.Module):
-    def __init__(self, num_classes):
+    def __init__(self, args):
         super(AlexNet, self).__init__()
+        self.emb = Embedding(args)
+        self.args = args
         self.features = nn.Sequential(
             nn.Conv2d(3, 64, kernel_size=3, stride=2, padding=2),
             nn.ReLU(inplace=True),
@@ -23,37 +28,16 @@ class AlexNet(nn.Module):
             nn.ReLU(inplace=True),
             nn.MaxPool2d(kernel_size=2, stride=2),
         )
-        self.classifier = nn.Sequential(
+        self.linear = nn.Sequential(
             nn.Linear(256 * 6 * 6, 512),
             nn.ReLU(inplace=True),
-            nn.Linear(512, num_classes),
+            nn.Linear(512, 374),
+            nn.ReLU(inplace=True),
         )
 
-        # self.features = nn.Sequential(
-        #     nn.Conv2d(3, 64, kernel_size=11, stride=4, padding=2),
-        #     nn.ReLU(inplace=True),
-        #     nn.MaxPool2d(kernel_size=3, stride=2),
-        #     nn.Conv2d(64, 192, kernel_size=5, padding=2),
-        #     nn.ReLU(inplace=True),
-        #     nn.MaxPool2d(kernel_size=3, stride=2),
-        #     nn.Conv2d(192, 384, kernel_size=3, padding=1),
-        #     nn.ReLU(inplace=True),
-        #     nn.Conv2d(384, 256, kernel_size=3, padding=1),
-        #     nn.ReLU(inplace=True),
-        #     nn.Conv2d(256, 256, kernel_size=3, padding=1),
-        #     nn.ReLU(inplace=True),
-        #     nn.MaxPool2d(kernel_size=3, stride=2),
-        # )
-        # self.classifier = nn.Sequential(
-        #     nn.Linear(256 * 6 * 6, 4096),
-        #     nn.ReLU(inplace=True),
-        #     nn.Linear(4096, 4096),
-        #     nn.ReLU(inplace=True),
-        #     nn.Linear(4096, num_classes),
-        # )
-
-    def forward(self, x, words, mask):
+    def forward(self, x, cd):
         x = self.features(x)
         x = x.view(x.size(0), -1)
-        x = self.classifier(x)
+        x = self.linear(x)
+        x = f.softmax(x, dim=1)
         return x

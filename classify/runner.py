@@ -38,18 +38,16 @@ class Runner:
 
     def _build_model(self):
         # self.model = Simple(num_classes=self.classes)
-        # self.model = AlexNet(num_classes=self.classes)
-        self.model = Efficient(self.classes)
+        self.model = AlexNet(self.args)
+        # self.model = EfficientNet(self.classes)
 
         self.device = torch.device('cuda:0')
         self.model = self.model.to(self.device)
 
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.args.lr)
-        # 5 6e-4:6681 3e-4:6755 1e-4:6855
-        # 3 6753
         self.scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(self.optimizer, T_0=5)
         self.f1_loss = f1_loss
-        self.cross_entropy = torch.nn.CrossEntropyLoss()
+        self.bce = torch.nn.BCELoss()
 
         self.f1_score = F1Score()
         self.analysis_meter = AnalysisMeter()
@@ -69,13 +67,15 @@ class Runner:
     def _train_one_epoch(self, epoch):
         self.model.train()
         loss_meter = AverageMeter()
-        for batch, (images, words, idx, mask, labels, words_label) in enumerate(self.train_loader, 1):
+        for batch, (images, idx, cd, labels) in enumerate(self.train_loader, 1):
 
             images = images.to(self.device)
             labels = labels.to(self.device)
+            cd = cd.to(self.device)
             self.optimizer.zero_grad()
-            outputs = self.model(images, words, mask)
-            loss = self.cross_entropy(outputs, torch.argmax(labels, dim=1))
+            outputs = self.model(images, cd)
+            loss = self.bce(outputs, labels)
+            # loss += self.bce(torch.sigmoid(outputs), words_label)
             # loss += self.f1_loss(outputs, labels) / 4
             loss.backward(loss)
             self.optimizer.step()
@@ -92,11 +92,12 @@ class Runner:
         self.model.eval()
         with torch.no_grad():
             for data_loader in data_loaders:
-                for batch, (images, words, idx, mask, labels, words_label) in enumerate(data_loader, 1):
+                for batch, (images, idx, cd, labels) in enumerate(data_loader, 1):
                     images = images.to(self.device)
                     labels = labels.to(self.device)
-                    outputs = self.model(images, words, mask)
-                    loss = self.cross_entropy(outputs, torch.argmax(labels, dim=1))
+                    cd = cd.to(self.device)
+                    outputs = self.model(images, cd)
+                    loss = self.bce(outputs, labels)
                     self.f1_score.update(outputs, labels)
                     loss_meter.update(loss.item())
                     # if self.f1_score.best_f1 > 0.6:

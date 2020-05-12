@@ -120,5 +120,28 @@ def image_analysis():
     print('std:', std)
 
 
+def analysis():
+    self.data = []
+    self.labels = []
+    class_idx = 0
+    path = self.path + "images/"
+    path_list = os.listdir(path)
+    path_list.sort()
+    for filename in path_list:
+        class_path = os.path.join(path, filename)
+        class_list = os.listdir(class_path)
+        for img_name in class_list:
+            img = os.path.join(class_path, img_name)
+            if img_name[:-5] in self.info_labels:
+                idx = img_name[:-5]
+                label = torch.zeros(374)
+                for i in self.info_labels[idx]:
+                    label[i - 1] = 1
+                cd = np.zeros(50)
+                cd[class_idx] = 1
+                self.data.append((img, idx, cd, label))
+        class_idx += 1
+
+
 if __name__ == '__main__':
     image_analysis()

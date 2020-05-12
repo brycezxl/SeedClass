@@ -14,31 +14,31 @@ class DataSet(data.Dataset):
         self._load_labels()
         self._load_images()
 
-        # self.transforms_train = transforms.Compose([
-        #     # transforms.RandomChoice([
-        #         transforms.Resize((64, 64)),
-        #         # transforms.RandomResizedCrop(64),
-        #     # ]),
-        #     # transforms.RandomHorizontalFlip(),
-        #     # transforms.RandomApply([transforms.ColorJitter()]),
-        #     transforms.ToTensor(),
-        #     # transforms.Normalize((0.3854, 0.4005, 0.3472), (0.2183, 0.2078, 0.2003)),
-        # ])
-        # self.transforms_test = transforms.Compose([
-        #     transforms.Resize((64, 64)),
-        #     transforms.ToTensor(),
-        #     # transforms.Normalize((0.3854, 0.4005, 0.3472), (0.2183, 0.2078, 0.2003)),
-        # ])
         self.transforms_train = transforms.Compose([
-            transforms.Resize((224, 224)),
+            # transforms.RandomChoice([
+                transforms.Resize((64, 64)),
+                # transforms.RandomResizedCrop(64),
+            # ]),
+            # transforms.RandomHorizontalFlip(),
+            # transforms.RandomApply([transforms.ColorJitter()]),
             transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+            # transforms.Normalize((0.3854, 0.4005, 0.3472), (0.2183, 0.2078, 0.2003)),
         ])
         self.transforms_test = transforms.Compose([
-            transforms.Resize((224, 224)),
+            transforms.Resize((64, 64)),
             transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+            # transforms.Normalize((0.3854, 0.4005, 0.3472), (0.2183, 0.2078, 0.2003)),
         ])
+        # self.transforms_train = transforms.Compose([
+        #     transforms.Resize((224, 224)),
+        #     transforms.ToTensor(),
+        #     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+        # ])
+        # self.transforms_test = transforms.Compose([
+        #     transforms.Resize((224, 224)),
+        #     transforms.ToTensor(),
+        #     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+        # ])
 
     def _load_labels(self):
         self.info_labels = {}
@@ -69,12 +69,12 @@ class DataSet(data.Dataset):
                 img = os.path.join(class_path, img_name)
                 if img_name[:-5] in self.info_labels:
                     idx = img_name[:-5]
-                    label = self.info_labels[idx]
-                    mask = [1] * len(label) + [0] * (5 - len(label))
-                    label += [0 for _ in range(5 - len(label))]
-                    class_array = np.zeros(50)
-                    class_array[class_idx] = 1
-                    self.data.append((img, label, idx, mask, class_array, label))
+                    label = torch.zeros(374)
+                    for i in self.info_labels[idx]:
+                        label[i - 1] = 1
+                    cd = np.zeros(50)
+                    cd[class_idx] = 1
+                    self.data.append((img, idx, cd, label))
             class_idx += 1
         random.shuffle(self.data)
 
@@ -85,7 +85,7 @@ class DataSet(data.Dataset):
             img = self.transforms_train(img)
         else:
             img = self.transforms_test(img)
-        return img, d[1], d[2], d[3], d[4], d[5]
+        return img, d[1], d[2], d[3]
 
     def __len__(self):
         return len(self.data)

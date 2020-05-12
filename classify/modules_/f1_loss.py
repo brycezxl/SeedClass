@@ -17,16 +17,20 @@ def f1_loss(predict, label):
 
 class F1Score(object):
     def __init__(self):
-        self.tp = torch.zeros(50).cuda()
-        self.fp = torch.zeros(50).cuda()
-        self.fn = torch.zeros(50).cuda()
+        self.tp = torch.zeros(374).cuda()
+        self.fp = torch.zeros(374).cuda()
+        self.fn = torch.zeros(374).cuda()
         self.best_f1 = 0
 
     def update(self, predict, label):
+        # label_ = torch.sum(label, dim=-1)
         x = torch.zeros_like(predict)
-        a = torch.argmax(predict, dim=1)
-        for i in range(x.size(0)):
-            x[i, a[i]] = 1
+        # for i in range(x.size(0)):
+        #     threshold = 1 / float(label_[i] + 1)
+        #     for j in range(x.size(1)):
+        #         if predict[i][j] > threshold:
+        #             x[i][j] = 1
+        x[torch.where(predict > 0.2)] = 1
         predict = x
 
         self.tp += torch.sum(label * predict, dim=0)
@@ -49,9 +53,9 @@ class F1Score(object):
         return False
 
     def reset(self):
-        self.tp = torch.zeros(50).cuda()
-        self.fp = torch.zeros(50).cuda()
-        self.fn = torch.zeros(50).cuda()
+        self.tp = torch.zeros(374).cuda()
+        self.fp = torch.zeros(374).cuda()
+        self.fn = torch.zeros(374).cuda()
 
 
 class FocalLoss(nn.Module):
