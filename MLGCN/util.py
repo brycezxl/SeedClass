@@ -333,9 +333,9 @@ class F1Score(object):
         self.fn += torch.sum(label * (1 - predict), dim=0)
 
     def get_f1(self):
-        p = self.tp / (self.tp + self.fp)
-        r = self.tp / (self.tp + self.fn)
-        f1 = (2 * p * r + 1e-10) / (p + r + 1e-5)
+        p = self.tp / (self.tp + self.fp + 1e-5)
+        r = self.tp / (self.tp + self.fn + 1e-5)
+        f1 = (2 * p * r) / (p + r + 1e-5)
 
         return torch.mean(f1)
 
