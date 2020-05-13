@@ -1,4 +1,3 @@
-import torch
 import numpy as np
 import pickle
 from gensim.models import KeyedVectors
@@ -55,5 +54,5 @@ def gen_emb():
 
 if __name__ == '__main__':
     # gen_adj()
-    gen_emb()
+    # gen_emb()
     print(1)

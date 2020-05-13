@@ -20,7 +20,6 @@ class Corel(data.Dataset):
 
         self.transforms_train = transforms.Compose([
             transforms.Resize((224, 224)),
-            transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
         ])
         self.transforms_test = transforms.Compose([

@@ -16,8 +16,8 @@ class Warp(object):
         return img.resize((self.size, self.size), self.interpolation)
 
     def __str__(self):
-        return self.__class__.__name__ + ' (size={size}, interpolation={interpolation})'.format(size=self.size,
-                                                                                                interpolation=self.interpolation)
+        return self.__class__.__name__ + ' (size={size}, interpolation={interpolation})'\
+            .format(size=self.size, interpolation=self.interpolation)
 
 
 class MultiScaleCrop(object):
@@ -90,7 +90,6 @@ class MultiScaleCrop(object):
 
         return ret
 
-
     def __str__(self):
         return self.__class__.__name__
 
@@ -117,14 +116,14 @@ def download_url(url, destination=None, progress_bar=True):
     Progress bar use/example adapted from tqdm documentation: https://github.com/tqdm/tqdm
     """
 
-    def my_hook(t):
+    def my_hook(t_):
         last_b = [0]
 
         def inner(b=1, bsize=1, tsize=None):
             if tsize is not None:
-                t.total = tsize
+                t_.total = tsize
             if b > 0:
-                t.update((b - last_b[0]) * bsize)
+                t_.update((b - last_b[0]) * bsize)
             last_b[0] = b
 
         return inner
@@ -217,7 +216,7 @@ class AveragePrecisionMeter(object):
         if self.scores.numel() == 0:
             return 0
         ap = torch.zeros(self.scores.size(1))
-        rg = torch.arange(1, self.scores.size(0)).float()
+        # rg = torch.arange(1, self.scores.size(0)).float()
         # compute average precision for each class
         for k in range(self.scores.size(1)):
             # sort scores
@@ -231,7 +230,7 @@ class AveragePrecisionMeter(object):
     def average_precision(output, target, difficult_examples=True):
 
         # sort examples
-        sorted, indices = torch.sort(output, dim=0, descending=True)
+        sorted_, indices = torch.sort(output, dim=0, descending=True)
 
         # Computes prec@i
         pos_count = 0.
@@ -269,8 +268,8 @@ class AveragePrecisionMeter(object):
                 scores[i, ind] = 1 if tmp[i, ind] >= 0 else -1
         return self.evaluation(scores, targets)
 
-
-    def evaluation(self, scores_, targets_):
+    @staticmethod
+    def evaluation(scores_, targets_):
         n, n_class = scores_.shape
         Nc, Np, Ng = np.zeros(n_class), np.zeros(n_class), np.zeros(n_class)
         for k in range(n_class):
@@ -291,7 +290,7 @@ class AveragePrecisionMeter(object):
         return OP, OR, OF1, CP, CR, CF1
 
 
-def gen_A(num_classes, t, adj_file):
+def gen_a(num_classes, t, adj_file):
     import pickle
     result = pickle.load(open(adj_file, 'rb'))
     _adj = result['adj']
@@ -305,8 +304,8 @@ def gen_A(num_classes, t, adj_file):
     return _adj
 
 
-def gen_adj(A):
-    D = torch.pow(A.sum(1).float(), -0.5)
+def gen_adj(a):
+    D = torch.pow(a.sum(1).float(), -0.5)
     D = torch.diag(D)
-    adj = torch.matmul(torch.matmul(A, D).t(), D)
+    adj = torch.matmul(torch.matmul(a, D).t(), D)
     return adj

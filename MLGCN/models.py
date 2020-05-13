@@ -62,7 +62,7 @@ class GCNResnet(nn.Module):
         self.gc2 = GraphConvolution(1024, 2048)
         self.relu = nn.LeakyReLU(0.2)
 
-        adj = gen_A(num_classes, t, adj_file)
+        adj = gen_a(num_classes, t, adj_file)
         self.A = Parameter(torch.from_numpy(adj).float())
         # image normalization
         self.image_normalization_mean = [0.485, 0.456, 0.406]
