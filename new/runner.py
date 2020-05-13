@@ -1,17 +1,12 @@
 import logging
-import os
-import random
-from torch import nn
-import numpy as np
-import torch
+import tqdm
 import torch.backends.cudnn
+from torch import nn
 from torch.utils.data import DataLoader
-from modules_.f1_loss import f1_loss, F1Score
-from get_dataset import DataSet
+
+from get_dataset import Corel
 from models_ import *
-from utils import AverageMeter, AnalysisMeter
-from corel import Corel
-from models import gcn_resnet101
+from utils import *
 
 
 class Runner:
@@ -39,19 +34,18 @@ class Runner:
         torch.backends.cudnn.deterministic = True
 
     def _build_model(self):
-        # self.model = Simple(num_classes=self.classes)
-        # self.model = AlexNet(self.args)
-        # self.model = EfficientNet(self.classes)
-        self.model = gcn_resnet101(num_classes=374, t=0.05, adj_file='../corel_5k/adj.pkl',
-                                   pretrained=self.args.pretrain)
+        self.model = MLGCN(num_classes=374, t=0.05, adj_file='../corel_5k/adj.pkl',
+                           pre_trained=self.args.pretrain)
 
         self.device = torch.device('cuda:0')
         self.model = self.model.to(self.device)
 
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.args.lr)
         self.scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(self.optimizer, T_0=5)
+
         self.f1_loss = f1_loss
-        self.bce = torch.nn.BCELoss()
+        self.bce = nn.BCELoss()
+        self.mlsm = nn.MultiLabelSoftMarginLoss()
 
         self.f1_score = F1Score()
         self.analysis_meter = AnalysisMeter()
@@ -71,16 +65,16 @@ class Runner:
     def _train_one_epoch(self, epoch):
         self.model.train()
         loss_meter = AverageMeter()
-        for batch, ((images, cd, imp), labels) in enumerate(self.train_loader, 1):
+        for batch, ((images, cd, imp), labels) in enumerate(tqdm.tqdm(self.train_loader), 1):
 
             images = images.to(self.device)
-            labels = labels.to(self.device)
+            labels = labels.to(self.device).double()
             cd = cd.to(self.device)
             imp = imp.to(self.device).double()
             self.optimizer.zero_grad()
             outputs = self.model(images, imp)
-            loss = self.bce(outputs, labels.double())
-            # loss += self.bce(torch.sigmoid(outputs), words_label)
+            loss = self.bce(outputs, labels)
+            # loss = self.mlsm(outputs, labels)
             # loss += self.f1_loss(outputs, labels) / 4
             loss.backward(loss)
             self.optimizer.step()
@@ -97,12 +91,14 @@ class Runner:
         self.model.eval()
         with torch.no_grad():
             for data_loader in data_loaders:
-                for batch, (images, idx, cd, labels) in enumerate(data_loader, 1):
+                for batch, ((images, cd, imp), labels) in enumerate(data_loader, 1):
                     images = images.to(self.device)
-                    labels = labels.to(self.device)
+                    labels = labels.to(self.device).double()
                     cd = cd.to(self.device)
-                    outputs = self.model(images, cd)
-                    loss = self.bce(outputs, labels)
+                    imp = imp.to(self.device).double()
+                    outputs = self.model(images, imp)
+                    # loss = self.bce(outputs, labels)
+                    loss = self.mlsm(outputs, labels)
                     self.f1_score.update(outputs, labels)
                     loss_meter.update(loss.item())
                     # if self.f1_score.best_f1 > 0.6:

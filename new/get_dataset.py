@@ -1,33 +1,33 @@
 import os
-from torch.utils import data
-from PIL import Image
-import numpy as np
-from torchvision import transforms
+import pickle
 import random
+
+import numpy as np
 import torch
+from PIL import Image
+from torch.utils import data
+from torchvision import transforms
 
 
-class DataSet(data.Dataset):
+class Corel(data.Dataset):
     def __init__(self, train):
         self.train = train
-        self.path = "../corel_5k/"
+        self.path = '../corel_5k/'
         self._load_labels()
         self._load_images()
+        inp_name = '../corel_5k/word2vec.pkl'
+        with open(inp_name, 'rb') as f:
+            self.inp = pickle.load(f)
 
         self.transforms_train = transforms.Compose([
-            # transforms.RandomChoice([
-                transforms.Resize((224, 224)),
-                # transforms.RandomResizedCrop(64),
-            # ]),
-            # transforms.RandomHorizontalFlip(),
-            # transforms.RandomApply([transforms.ColorJitter()]),
+            transforms.Resize((224, 224)),
             transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ])
         self.transforms_test = transforms.Compose([
             transforms.Resize((224, 224)),
             transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ])
 
     def _load_labels(self):
@@ -64,7 +64,7 @@ class DataSet(data.Dataset):
                         label[i - 1] = 1
                     cd = np.zeros(50)
                     cd[class_idx] = 1
-                    self.data.append((img, idx, cd, label))
+                    self.data.append((img, cd, label))
             class_idx += 1
         random.shuffle(self.data)
 
@@ -75,7 +75,7 @@ class DataSet(data.Dataset):
             img = self.transforms_train(img)
         else:
             img = self.transforms_test(img)
-        return img, d[1], d[2], d[3]
+        return (img, d[1], self.inp), d[2]
 
     def __len__(self):
         return len(self.data)

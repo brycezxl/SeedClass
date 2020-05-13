@@ -1,11 +1,12 @@
+import os
+import random
 import time
+
+import numpy as np
 import torch
 import torch.nn.functional as f
-import os
 from PIL import Image
 from torchvision import transforms
-import random
-import numpy as np
 
 
 class AverageMeter(object):

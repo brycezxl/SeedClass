@@ -1,4 +1,2 @@
-from .simple import Simple
-from .alexnet import AlexNet
-from .embedding import Embedding
-from .efficentnet import EfficientNet
+from .f1_loss import *
+from .ml_gcn import MLGCN
