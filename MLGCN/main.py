@@ -2,10 +2,9 @@ import argparse
 from engine import *
 from models import *
 from voc import *
+from corel import *
 
 parser = argparse.ArgumentParser(description='WILDCAT Training')
-parser.add_argument('data', metavar='DIR',
-                    help='path to dataset (e.g. data/')
 parser.add_argument('--image-size', '-i', default=224, type=int,
                     metavar='N', help='image size (default: 224)')
 parser.add_argument('-j', '--workers', default=4, type=int, metavar='N',
@@ -16,7 +15,7 @@ parser.add_argument('--epoch_step', default=[30], type=int, nargs='+',
                     help='number of epochs to change learning rate')
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
-parser.add_argument('-b', '--batch-size', default=16, type=int,
+parser.add_argument('-b', '--batch-size', default=2, type=int,
                     metavar='N', help='mini-batch size (default: 256)')
 parser.add_argument('--lr', '--learning-rate', default=0.1, type=float,
                     metavar='LR', help='initial learning rate')
@@ -34,20 +33,20 @@ parser.add_argument('-e', '--evaluate', dest='evaluate', action='store_true',
                     help='evaluate model on validation set')
 
 
-def main_voc2007():
+def main():
     global args, best_prec1, use_gpu
     args = parser.parse_args()
 
     use_gpu = torch.cuda.is_available()
 
     # define dataset
-    train_dataset = Voc2007Classification(args.data, 'trainval', inp_name='data/voc/voc_glove_word2vec.pkl')
-    val_dataset = Voc2007Classification(args.data, 'test', inp_name='data/voc/voc_glove_word2vec.pkl')
+    train_dataset = Corel(train=True)
+    val_dataset = Corel(train=False)
 
-    num_classes = 20
+    num_classes = 374
 
     # load model
-    model = gcn_resnet101(num_classes=num_classes, t=0.4, adj_file='data/voc/voc_adj.pkl')
+    model = gcn_resnet101(num_classes=num_classes, t=0.4, adj_file='data/corel_5k/adj.pkl')
 
     # define loss function (criterion)
     criterion = nn.MultiLabelSoftMarginLoss()
@@ -68,4 +67,4 @@ def main_voc2007():
 
 
 if __name__ == '__main__':
-    main_voc2007()
+    main()

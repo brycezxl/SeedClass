@@ -105,14 +105,14 @@ class COCO2014(data.Dataset):
         self.img_list = []
         self.transform = transform
         download_coco2014(root, phase)
-        self._get_anno()
+        self.get_anno()
         self.num_classes = len(self.cat2idx)
 
         with open(inp_name, 'rb') as f:
             self.inp = pickle.load(f)
         self.inp_name = inp_name
 
-    def _get_anno(self):
+    def get_anno(self):
         list_path = os.path.join(self.root, 'data', '{}_anno.json'.format(self.phase))
         self.img_list = json.load(open(list_path, 'r'))
         self.cat2idx = json.load(open(os.path.join(self.root, 'data', 'category.json'), 'r'))

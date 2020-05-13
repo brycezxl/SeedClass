@@ -60,17 +60,15 @@ def main_coco():
                                 weight_decay=args.weight_decay)
 
     state = {'batch_size': args.batch_size, 'image_size': args.image_size, 'max_epochs': args.epochs,
-             'evaluate': args.evaluate, 'resume': args.resume, 'num_classes':num_classes}
-    state['difficult_examples'] = True
-    state['save_model_path'] = 'checkpoint/coco/'
-    state['workers'] = args.workers
-    state['epoch_step'] = args.epoch_step
-    state['lr'] = args.lr
+             'evaluate': args.evaluate, 'resume': args.resume, 'num_classes': num_classes, 'difficult_examples': True,
+             'save_model_path': 'checkpoint/coco/', 'workers': args.workers, 'epoch_step': args.epoch_step,
+             'lr': args.lr}
     # state['device_ids'] = args.device_ids
     if args.evaluate:
         state['evaluate'] = True
     engine = GCNMultiLabelMAPEngine(state)
     engine.learning(model, criterion, train_dataset, val_dataset, optimizer)
+
 
 if __name__ == '__main__':
     main_coco()

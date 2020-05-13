@@ -424,7 +424,6 @@ class GCNMultiLabelMAPEngine(MultiLabelMAPEngine):
             nn.utils.clip_grad_norm(model.parameters(), max_norm=10.0)
             optimizer.step()
 
-
     def on_start_batch(self, training, model, criterion, data_loader, optimizer=None, display=True):
 
         self.state['target_gt'] = self.state['target'].clone()
@@ -435,4 +434,3 @@ class GCNMultiLabelMAPEngine(MultiLabelMAPEngine):
         self.state['feature'] = input[0]
         self.state['out'] = input[1]
         self.state['input'] = input[2]
-

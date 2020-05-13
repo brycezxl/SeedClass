@@ -4,6 +4,7 @@ from util import *
 import torch
 import torch.nn as nn
 
+
 class GraphConvolution(nn.Module):
     """
     Simple GCN layer, similar to https://arxiv.org/abs/1609.02907
@@ -26,8 +27,8 @@ class GraphConvolution(nn.Module):
         if self.bias is not None:
             self.bias.data.uniform_(-stdv, stdv)
 
-    def forward(self, input, adj):
-        support = torch.matmul(input, self.weight)
+    def forward(self, inputs, adj):
+        support = torch.matmul(inputs, self.weight)
         output = torch.matmul(adj, support)
         if self.bias is not None:
             return output + self.bias
@@ -54,14 +55,15 @@ class GCNResnet(nn.Module):
             model.layer4,
         )
         self.num_classes = num_classes
-        self.pooling = nn.MaxPool2d(14, 14)
+        # self.pooling = nn.MaxPool2d(14, 14)  # origin
+        self.pooling = nn.MaxPool2d(7, 7)
 
         self.gc1 = GraphConvolution(in_channel, 1024)
         self.gc2 = GraphConvolution(1024, 2048)
         self.relu = nn.LeakyReLU(0.2)
 
-        _adj = gen_A(num_classes, t, adj_file)
-        self.A = Parameter(torch.from_numpy(_adj).float())
+        adj = gen_A(num_classes, t, adj_file)
+        self.A = Parameter(torch.from_numpy(adj).float())
         # image normalization
         self.image_normalization_mean = [0.485, 0.456, 0.406]
         self.image_normalization_std = [0.229, 0.224, 0.225]
@@ -70,7 +72,6 @@ class GCNResnet(nn.Module):
         feature = self.features(feature)
         feature = self.pooling(feature)
         feature = feature.view(feature.size(0), -1)
-
 
         inp = inp[0]
         adj = gen_adj(self.A).detach()
@@ -90,7 +91,7 @@ class GCNResnet(nn.Module):
                 ]
 
 
-
 def gcn_resnet101(num_classes, t, pretrained=True, adj_file=None, in_channel=300):
-    model = models.resnet101(pretrained=pretrained)
+    # model = models.resnet101(pretrained=pretrained)
+    model = models.resnet101()
     return GCNResnet(model, num_classes, t=t, adj_file=adj_file, in_channel=in_channel)

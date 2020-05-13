@@ -5,7 +5,7 @@ from PIL import Image
 from tqdm import tqdm
 import numpy as np
 import random
-import torch.nn.functional as F
+
 
 class Warp(object):
     def __init__(self, size, interpolation=Image.BILINEAR):
@@ -18,6 +18,8 @@ class Warp(object):
     def __str__(self):
         return self.__class__.__name__ + ' (size={size}, interpolation={interpolation})'.format(size=self.size,
                                                                                                 interpolation=self.interpolation)
+
+
 class MultiScaleCrop(object):
 
     def __init__(self, input_size, scales=None, max_distort=1, fix_crop=True, more_fix_crop=True):
@@ -288,6 +290,7 @@ class AveragePrecisionMeter(object):
         CF1 = (2 * CP * CR) / (CP + CR)
         return OP, OR, OF1, CP, CR, CF1
 
+
 def gen_A(num_classes, t, adj_file):
     import pickle
     result = pickle.load(open(adj_file, 'rb'))
@@ -300,6 +303,7 @@ def gen_A(num_classes, t, adj_file):
     _adj = _adj * 0.25 / (_adj.sum(0, keepdims=True) + 1e-6)
     _adj = _adj + np.identity(num_classes, np.int)
     return _adj
+
 
 def gen_adj(A):
     D = torch.pow(A.sum(1).float(), -0.5)
