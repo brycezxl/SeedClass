@@ -16,9 +16,9 @@ parser.add_argument('--epoch_step', default=[30], type=int, nargs='+',
                     help='number of epochs to change learning rate')
 parser.add_argument('-b', '--batch-size', default=1, type=int,
                     metavar='N', help='mini-batch size (default: 256)')
-parser.add_argument('--lr', '--learning-rate', default=0.1, type=float,
+parser.add_argument('--lr', '--learning-rate', default=1e-3, type=float,
                     metavar='LR', help='initial learning rate')
-parser.add_argument('--lrp', '--learning-rate-pretrained', default=0.1, type=float,
+parser.add_argument('--lrp', '--learning-rate-pretrained', default=1e-4, type=float,
                     metavar='LR', help='learning rate for pre-trained layers')
 parser.add_argument('--momentum', default=0.9, type=float, metavar='M',
                     help='momentum')
@@ -40,7 +40,7 @@ def main():
 
     train_dataset = Corel(train=True)
     val_dataset = Corel(train=False)
-    model = gcn_resnet101(num_classes=num_classes, t=0.4, adj_file='data/corel_5k/adj.pkl', pretrained=args.pretrain)
+    model = gcn_resnet101(num_classes=num_classes, t=0.05, adj_file='data/corel_5k/adj.pkl', pretrained=args.pretrain)
     criterion = nn.MultiLabelSoftMarginLoss()
     optimizer = torch.optim.SGD(model.get_config_optim(args.lr, args.lrp),
                                 lr=args.lr,
