@@ -75,4 +75,4 @@ class Corel(data.Dataset):
         return (img, d[1], self.inp), d[2]
 
     def __len__(self):
-        return 4
+        return len(self.data)
