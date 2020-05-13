@@ -3,6 +3,7 @@ from torch.nn import Parameter
 from util import *
 import torch
 import torch.nn as nn
+import torch.nn.functional as f
 
 
 class GraphConvolution(nn.Module):
@@ -81,6 +82,7 @@ class GCNResnet(nn.Module):
 
         x = x.transpose(0, 1)
         x = torch.matmul(feature, x)
+        x = f.softmax(x, dim=1)
         return x
 
     def get_config_optim(self, lr, lrp):
