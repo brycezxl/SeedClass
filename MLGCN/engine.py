@@ -335,10 +335,10 @@ class MultiLabelMAPEngine(Engine):
         if display:
             if training:
                 print('Epoch: [{0}]\t'
-                      'Loss {loss:.4f}\t'
+                      'Loss {loss:.6f}\t'
                       'mAP {map:.3f}'.format(self.state['epoch'], loss=loss, map=map_))
             else:
-                print('Test: \t Loss {loss:.4f}\t mAP {map:.3f}'.format(loss=loss, map=map_))
+                print('Test: \t Loss {loss:.6f}\t mAP {map:.3f}'.format(loss=loss, map=map_))
 
         return map_
 

@@ -41,7 +41,8 @@ def main():
     train_dataset = Corel(train=True)
     val_dataset = Corel(train=False)
     model = gcn_resnet101(num_classes=num_classes, t=0.05, adj_file='data/corel_5k/adj.pkl', pretrained=args.pretrain)
-    criterion = nn.MultiLabelSoftMarginLoss()
+    # criterion = nn.MultiLabelSoftMarginLoss()
+    criterion = nn.BCELoss()
     optimizer = torch.optim.SGD(model.get_config_optim(args.lr, args.lrp),
                                 lr=args.lr,
                                 momentum=args.momentum,
