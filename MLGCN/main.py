@@ -6,13 +6,15 @@ from corel import *
 parser = argparse.ArgumentParser(description='WILDCAT Training')
 parser.add_argument('--image-size', '-i', default=224, type=int,
                     metavar='N', help='image size (default: 224)')
+parser.add_argument('--pretrain', action='store_true', default=False,
+                    help='')
 parser.add_argument('-j', '--workers', default=4, type=int, metavar='N',
                     help='number of data loading workers (default: 4)')
 parser.add_argument('--epochs', default=20, type=int, metavar='N',
                     help='number of total epochs to run')
 parser.add_argument('--epoch_step', default=[30], type=int, nargs='+',
                     help='number of epochs to change learning rate')
-parser.add_argument('-b', '--batch-size', default=2, type=int,
+parser.add_argument('-b', '--batch-size', default=1, type=int,
                     metavar='N', help='mini-batch size (default: 256)')
 parser.add_argument('--lr', '--learning-rate', default=0.1, type=float,
                     metavar='LR', help='initial learning rate')
@@ -38,7 +40,7 @@ def main():
 
     train_dataset = Corel(train=True)
     val_dataset = Corel(train=False)
-    model = gcn_resnet101(num_classes=num_classes, t=0.4, adj_file='data/corel_5k/adj.pkl')
+    model = gcn_resnet101(num_classes=num_classes, t=0.4, adj_file='data/corel_5k/adj.pkl', pretrained=args.pretrain)
     criterion = nn.MultiLabelSoftMarginLoss()
     optimizer = torch.optim.SGD(model.get_config_optim(args.lr, args.lrp),
                                 lr=args.lr,

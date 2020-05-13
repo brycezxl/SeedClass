@@ -323,42 +323,22 @@ class MultiLabelMAPEngine(Engine):
         Engine.__init__(self, state)
         if self._state('difficult_examples') is None:
             self.state['difficult_examples'] = False
-        self.state['ap_meter'] = AveragePrecisionMeter(self.state['difficult_examples'])
+        self.state['ap_meter'] = F1Score()
 
     def on_start_epoch(self, training, model, criterion, data_loader, optimizer=None, display=True):
         Engine.on_start_epoch(self, training, model, criterion, data_loader, optimizer)
         self.state['ap_meter'].reset()
 
     def on_end_epoch(self, training, model, criterion, data_loader, optimizer=None, display=True):
-        map_ = 100 * self.state['ap_meter'].value().mean()
+        map_ = self.state['ap_meter'].get_f1()
         loss = self.state['meter_loss'].value()[0]
-        OP, OR, OF1, CP, CR, CF1 = self.state['ap_meter'].overall()
-        OP_k, OR_k, OF1_k, CP_k, CR_k, CF1_k = self.state['ap_meter'].overall_topk(3)
         if display:
             if training:
                 print('Epoch: [{0}]\t'
                       'Loss {loss:.4f}\t'
                       'mAP {map:.3f}'.format(self.state['epoch'], loss=loss, map=map_))
-                print('OP: {OP:.4f}\t'
-                      'OR: {OR:.4f}\t'
-                      'OF1: {OF1:.4f}\t'
-                      'CP: {CP:.4f}\t'
-                      'CR: {CR:.4f}\t'
-                      'CF1: {CF1:.4f}'.format(OP=OP, OR=OR, OF1=OF1, CP=CP, CR=CR, CF1=CF1))
             else:
                 print('Test: \t Loss {loss:.4f}\t mAP {map:.3f}'.format(loss=loss, map=map_))
-                print('OP: {OP:.4f}\t'
-                      'OR: {OR:.4f}\t'
-                      'OF1: {OF1:.4f}\t'
-                      'CP: {CP:.4f}\t'
-                      'CR: {CR:.4f}\t'
-                      'CF1: {CF1:.4f}'.format(OP=OP, OR=OR, OF1=OF1, CP=CP, CR=CR, CF1=CF1))
-                print('OP_3: {OP:.4f}\t'
-                      'OR_3: {OR:.4f}\t'
-                      'OF1_3: {OF1:.4f}\t'
-                      'CP_3: {CP:.4f}\t'
-                      'CR_3: {CR:.4f}\t'
-                      'CF1_3: {CF1:.4f}'.format(OP=OP_k, OR=OR_k, OF1=OF1_k, CP=CP_k, CR=CR_k, CF1=CF1_k))
 
         return map_
 
@@ -377,7 +357,7 @@ class MultiLabelMAPEngine(Engine):
         Engine.on_end_batch(self, training, model, criterion, data_loader, optimizer, display=False)
 
         # measure mAP
-        self.state['ap_meter'].add(self.state['output'].data, self.state['target_gt'])
+        self.state['ap_meter'].update(self.state['output'].data, self.state['target_gt'])
 
         if display and self.state['print_freq'] != 0 and self.state['iteration'] % self.state['print_freq'] == 0:
             loss = self.state['meter_loss'].value()[0]

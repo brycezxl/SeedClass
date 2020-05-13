@@ -309,3 +309,44 @@ def gen_adj(a):
     D = torch.diag(D)
     adj = torch.matmul(torch.matmul(a, D).t(), D)
     return adj
+
+
+class F1Score(object):
+    def __init__(self):
+        self.tp = torch.zeros(374).cuda()
+        self.fp = torch.zeros(374).cuda()
+        self.fn = torch.zeros(374).cuda()
+        self.best_f1 = 0
+
+    def update(self, predict, label):
+        label = label.cuda()
+        x = torch.zeros_like(predict).cuda()
+        threshold = 0.2
+        for i in range(x.size(0)):
+            for j in range(x.size(1)):
+                if predict[i][j] > threshold:
+                    x[i][j] = 1
+        predict = x
+
+        self.tp += torch.sum(label * predict, dim=0)
+        self.fp += torch.sum((1 - label) * predict, dim=0)
+        self.fn += torch.sum(label * (1 - predict), dim=0)
+
+    def get_f1(self):
+        p = self.tp / (self.tp + self.fp)
+        r = self.tp / (self.tp + self.fn)
+        f1 = (2 * p * r + 1e-10) / (p + r + 1e-5)
+
+        return torch.mean(f1)
+
+    def best(self):
+        f1_ = self.get_f1()
+        if f1_ > self.best_f1:
+            self.best_f1 = f1_
+            return True
+        return False
+
+    def reset(self):
+        self.tp = torch.zeros(374).cuda()
+        self.fp = torch.zeros(374).cuda()
+        self.fn = torch.zeros(374).cuda()
