@@ -1,5 +1,4 @@
 import math
-
 from torch import nn
 from torch.nn import Parameter
 
@@ -8,33 +7,37 @@ from utils import *
 
 
 class MLGCN(nn.Module):
-    def __init__(self, num_classes, t, pre_trained=True, adj_file=None, in_channel=300):
+    def __init__(self, num_classes, t, pre_trained=True,
+                 adj_path=None, mask_path=None, emb_path=None, in_channel=300):
         super(MLGCN, self).__init__()
         self.num_classes = num_classes
 
         # self.conv = ResNet(pre_trained=pre_trained)
         self.conv = AlexNet()
-
         self.gc1 = GraphConvolution(in_channel, 1024)
         self.gc2 = GraphConvolution(1024, 2048)
         self.relu = nn.LeakyReLU(0.2)
 
-        adj = gen_a(num_classes, t, adj_file)
-        self.A = Parameter(torch.from_numpy(adj).double(), requires_grad=True)
+        self.adj = Parameter(gen_a(num_classes, t, adj_path), requires_grad=True)
 
-    def forward(self, feature, inp):
-        feature = self.conv(feature)
-        feature = feature.view(feature.size(0), -1)
+        self.label_mask = load_label_mask(mask_path)
+        self.words = load_emb(emb_path)
 
-        inp = inp[0]
-        adj = gen_adj(self.A).detach()
-        x = self.gc1(inp, adj)
+    def forward(self, images, cds):
+        images = self.conv(images)
+        images = images.view(images.size(0), -1)
+
+        label_mask = self.label_mask[cds].unsqueeze(-1)
+        adj = gen_adj(self.adj)
+        x = self.words * label_mask.ceil()
+        x = self.gc1(x, adj)
         x = self.relu(x)
-        x = self.gc2(x, adj).squeeze(0)
+        x = self.gc2(x, adj)
 
-        x = x.transpose(0, 1)
-        x = torch.matmul(feature.double(), x)
-        x = f.softmax(x, dim=1)
+        x = torch.matmul(x, images.double().unsqueeze(-1))
+        x = x * label_mask
+        x[torch.where(label_mask == 0)] = -1e10
+        x = f.softmax(x.squeeze(-1), dim=1)
         return x
 
     def get_config_optim(self, lr, lrp):

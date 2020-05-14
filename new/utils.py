@@ -7,6 +7,7 @@ import torch
 import torch.nn.functional as f
 from PIL import Image
 from torchvision import transforms
+import pickle
 
 
 class AverageMeter(object):
@@ -211,16 +212,16 @@ class MultiScaleCrop(object):
 
 
 def gen_a(num_classes, t, adj_file):
-    import pickle
     result = pickle.load(open(adj_file, 'rb'))
     _adj = result['adj']
     _nums = result['nums']
     _nums = _nums[:, np.newaxis]
     _adj = _adj / _nums
-    _adj[_adj < t] = 0
-    _adj[_adj >= t] = 1
+    # _adj[_adj < t] = 0
+    # _adj[_adj >= t] = 1
     _adj = _adj * 0.25 / (_adj.sum(0, keepdims=True) + 1e-6)
     _adj = _adj + np.identity(num_classes, np.int)
+    _adj = torch.from_numpy(_adj).double()
     return _adj
 
 
@@ -228,7 +229,7 @@ def gen_adj(a):
     D = torch.pow(a.sum(1).float(), -0.5)
     D = torch.diag(D).double()
     adj = torch.matmul(torch.matmul(a, D).t(), D)
-    return adj
+    return adj.detach()
 
 
 class F1Score(object):
@@ -272,4 +273,13 @@ class F1Score(object):
         self.fn = torch.zeros(374).cuda()
 
 
+def load_label_mask(path):
+    result = pickle.load(open(path, 'rb'))
+    result = torch.from_numpy(result).cuda()
+    return result
 
+
+def load_emb(path):
+    emb = pickle.load(open(path, 'rb'))
+    emb = torch.from_numpy(emb).cuda()
+    return emb

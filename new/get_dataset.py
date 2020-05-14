@@ -15,9 +15,6 @@ class Corel(data.Dataset):
         self.path = '../corel_5k/'
         self._load_labels()
         self._load_images()
-        inp_name = '../corel_5k/word2vec.pkl'
-        with open(inp_name, 'rb') as f:
-            self.inp = pickle.load(f)
 
         self.transforms_train = transforms.Compose([
             transforms.Resize((224, 224)),
@@ -59,12 +56,10 @@ class Corel(data.Dataset):
                 img = os.path.join(class_path, img_name)
                 if img_name[:-5] in self.info_labels:
                     idx = img_name[:-5]
-                    label = torch.zeros(374)
+                    label = torch.zeros(374).double()
                     for i in self.info_labels[idx]:
                         label[i - 1] = 1
-                    cd = np.zeros(50)
-                    cd[class_idx] = 1
-                    self.data.append((img, cd, label))
+                    self.data.append((img, class_idx, label))
             class_idx += 1
         random.shuffle(self.data)
 
@@ -75,7 +70,7 @@ class Corel(data.Dataset):
             img = self.transforms_train(img)
         else:
             img = self.transforms_test(img)
-        return (img, d[1], self.inp), d[2]
+        return (img, d[1]), d[2]
 
     def __len__(self):
         return len(self.data)

@@ -1,7 +1,7 @@
 import logging
-import tqdm
+
 import torch.backends.cudnn
-from torch import nn
+import tqdm
 from torch.utils.data import DataLoader
 
 from get_dataset import Corel
@@ -34,7 +34,8 @@ class Runner:
         torch.backends.cudnn.deterministic = True
 
     def _build_model(self):
-        self.model = MLGCN(num_classes=374, t=0.05, adj_file='../corel_5k/adj.pkl',
+        self.model = MLGCN(num_classes=374, t=0.05, adj_path='../corel_5k/adj.pkl',
+                           mask_path='../corel_5k/label_mask.pkl', emb_path='../corel_5k/word2vec.pkl',
                            pre_trained=self.args.pretrain)
 
         self.device = torch.device('cuda:0')
@@ -65,14 +66,13 @@ class Runner:
     def _train_one_epoch(self, epoch):
         self.model.train()
         loss_meter = AverageMeter()
-        for batch, ((images, cd, imp), labels) in enumerate(tqdm.tqdm(self.train_loader), 1):
+        for batch, ((images, cds), labels) in enumerate(tqdm.tqdm(self.train_loader), 1):
 
             images = images.to(self.device)
-            labels = labels.to(self.device).double()
-            cd = cd.to(self.device)
-            imp = imp.to(self.device).double()
+            labels = labels.to(self.device)
+            cds = cds.to(self.device)
             self.optimizer.zero_grad()
-            outputs = self.model(images, imp)
+            outputs = self.model(images, cds)
             loss = self.bce(outputs, labels)
             # loss = self.mlsm(outputs, labels)
             # loss += self.f1_loss(outputs, labels) / 4
@@ -91,12 +91,11 @@ class Runner:
         self.model.eval()
         with torch.no_grad():
             for data_loader in data_loaders:
-                for batch, ((images, cd, imp), labels) in enumerate(data_loader, 1):
+                for batch, ((images, cds), labels) in enumerate(data_loader, 1):
                     images = images.to(self.device)
-                    labels = labels.to(self.device).double()
-                    cd = cd.to(self.device)
-                    imp = imp.to(self.device).double()
-                    outputs = self.model(images, imp)
+                    labels = labels.to(self.device)
+                    cds = cds.to(self.device)
+                    outputs = self.model(images, cds)
                     # loss = self.bce(outputs, labels)
                     loss = self.mlsm(outputs, labels)
                     self.f1_score.update(outputs, labels)
