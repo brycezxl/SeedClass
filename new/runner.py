@@ -73,8 +73,8 @@ class Runner:
             cds = cds.to(self.device)
             self.optimizer.zero_grad()
             outputs = self.model(images, cds)
-            loss = self.bce(outputs, labels)
-            # loss = self.mlsm(outputs, labels)
+            # loss = self.bce(outputs, labels)
+            loss = self.mlsm(outputs, labels)
             # loss += self.f1_loss(outputs, labels) / 4
             loss.backward(loss)
             self.optimizer.step()
