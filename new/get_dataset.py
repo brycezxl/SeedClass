@@ -1,8 +1,6 @@
 import os
-import pickle
 import random
 
-import numpy as np
 import torch
 from PIL import Image
 from torch.utils import data

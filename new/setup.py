@@ -1,11 +1,10 @@
-import numpy as np
-import pickle
-from gensim.models import KeyedVectors
-import random
-import matplotlib.pyplot as plt
-import seaborn as sns
-import torch
 import os
+import pickle
+
+import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
+from gensim.models import KeyedVectors
 
 
 def gen_adj():
@@ -40,6 +39,51 @@ def gen_adj():
     result = {'adj': adj, 'nums': nums}
     with open('../corel_5k/adj.pkl', 'wb+') as handle:
         pickle.dump(result, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+def gen_cd_adj():
+    info_labels = {}
+    train_path = "../corel_5k/labels/training_label"
+    test_path = "../corel_5k/labels/test_label"
+    with open(train_path, "r") as f:
+        label = f.readline()
+        while label:
+            label = label.split()
+            info_labels[label[0]] = []
+            for i in range(1, len(label)):
+                info_labels[label[0]].append(int(label[i]))
+            label = f.readline()
+    with open(test_path, "r") as f:
+        label = f.readline()
+        while label:
+            label = label.split()
+            info_labels[label[0]] = []
+            for i in range(1, len(label)):
+                info_labels[label[0]].append(int(label[i]))
+            label = f.readline()
+
+    adj = np.zeros((50, 374, 374))
+    class_idx = 0
+    path = "../corel_5k/images/"
+    path_list = os.listdir(path)
+    path_list.sort()
+    for filename in path_list:
+        class_path = os.path.join(path, filename)
+        class_list = os.listdir(class_path)
+        for img_name in class_list:
+            idx = img_name[:-5]
+            if idx in info_labels:
+                info = info_labels[idx]
+                for i in range(len(info) - 1):
+                    for j in range(i + 1, len(info)):
+                        x1 = int(info[i]) - 1
+                        x2 = int(info[j]) - 1
+                        adj[class_idx, x1, x2] += 1
+                        adj[class_idx, x2, x1] += 1
+        class_idx += 1
+
+    with open("../corel_5k/cd_adj.pkl", "wb+") as f:
+        pickle.dump(adj, f, protocol=pickle.HIGHEST_PROTOCOL)
 
 
 def gen_emb():
@@ -161,4 +205,5 @@ if __name__ == '__main__':
     # gen_emb()
     # heat_map()
     # analysis_occur()
-    gen_label_mask()
+    # gen_label_mask()
+    gen_cd_adj()

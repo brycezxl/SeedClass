@@ -1,4 +1,5 @@
 import math
+
 from torch import nn
 from torch.nn import Parameter
 
@@ -18,7 +19,8 @@ class MLGCN(nn.Module):
         self.gc2 = GraphConvolution(1024, 2048)
         self.relu = nn.LeakyReLU(0.2)
 
-        self.adj = Parameter(gen_a(num_classes, t, adj_path), requires_grad=True)
+        # self.adj = Parameter(load_adj(num_classes, t, adj_path), requires_grad=True)
+        self.adj = Parameter(load_cd_adj(num_classes, t), requires_grad=True)
 
         self.label_mask = load_label_mask(mask_path)
         self.words = load_emb(emb_path)
@@ -28,7 +30,9 @@ class MLGCN(nn.Module):
         images = images.view(images.size(0), -1)
 
         label_mask = self.label_mask[cds].unsqueeze(-1)
-        adj = gen_adj(self.adj)
+        adj = self.adj[cds]
+        adj = gen_adj(adj)
+
         x = self.words * label_mask.ceil()
         x = self.gc1(x, adj)
         x = self.relu(x)
