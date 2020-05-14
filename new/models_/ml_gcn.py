@@ -36,9 +36,9 @@ class MLGCN(nn.Module):
 
         x = torch.matmul(x, images.double().unsqueeze(-1))
         x = x * label_mask
-        x[torch.where(label_mask == 0)] = -1e10
+        x[torch.where(label_mask == 0)] += -1e10
+        x = torch.sigmoid(x.squeeze(-1))
         # x = f.softmax(x.squeeze(-1), dim=1)
-        x = x.squeeze(-1)
         return x
 
     def get_config_optim(self, lr, lrp):

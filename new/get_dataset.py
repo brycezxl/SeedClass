@@ -56,19 +56,9 @@ class Corel(data.Dataset):
                 img = os.path.join(class_path, img_name)
                 if img_name[:-5] in self.info_labels:
                     idx = img_name[:-5]
-
-                    # bce loss
-                    # label = torch.zeros(374).double()
-                    # for i in self.info_labels[idx]:
-                    #     label[i - 1] = 1
-
-                    # multi-label margin loss
-                    label = torch.zeros(374).long() - 1
-                    n = 0
+                    label = torch.zeros(374).double()
                     for i in self.info_labels[idx]:
-                        label[n] = i - 1
-                        n += 1
-
+                        label[i - 1] = 1
                     self.data.append((img, class_idx, label))
             class_idx += 1
         random.shuffle(self.data)

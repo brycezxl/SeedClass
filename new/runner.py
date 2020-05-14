@@ -46,7 +46,6 @@ class Runner:
 
         self.f1_loss = f1_loss
         self.bce = nn.BCELoss()
-        self.mlsm = nn.MultiLabelSoftMarginLoss()
 
         self.f1_score = F1Score()
         self.analysis_meter = AnalysisMeter()
@@ -73,8 +72,7 @@ class Runner:
             cds = cds.to(self.device)
             self.optimizer.zero_grad()
             outputs = self.model(images, cds)
-            # loss = self.bce(outputs, labels)
-            loss = self.mlsm(outputs, labels)
+            loss = self.bce(outputs, labels)
             # loss += self.f1_loss(outputs, labels) / 4
             loss.backward(loss)
             self.optimizer.step()
@@ -96,8 +94,7 @@ class Runner:
                     labels = labels.to(self.device)
                     cds = cds.to(self.device)
                     outputs = self.model(images, cds)
-                    # loss = self.bce(outputs, labels)
-                    loss = self.mlsm(outputs, labels)
+                    loss = self.bce(outputs, labels)
                     self.f1_score.update(outputs, labels)
                     loss_meter.update(loss.item())
                     # if self.f1_score.best_f1 > 0.6:
