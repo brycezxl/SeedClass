@@ -146,12 +146,19 @@ def load_cd_adj(num_classes, t):
     return _adj
 
 
-def gen_adj(adj):
+def gen_cd_adj(adj):
     for i in range(adj.shape[0]):
         a = adj[i, :, :]
         D = torch.pow(a.sum(1).float(), -0.5)
         D = torch.diag(D).double()
         adj[i, :, :] = torch.matmul(torch.matmul(a, D).t(), D)
+    return adj.detach()
+
+
+def gen_adj(a):
+    D = torch.pow(a.sum(1).float(), -0.5)
+    D = torch.diag(D).double()
+    adj = torch.matmul(torch.matmul(a, D).t(), D)
     return adj.detach()
 
 

@@ -19,19 +19,20 @@ class MLGCN(nn.Module):
         self.gc2 = GraphConvolution(1024, 2048)
         self.relu = nn.LeakyReLU(0.2)
 
-        # self.adj = Parameter(load_adj(num_classes, t, adj_path), requires_grad=True)
-        self.adj = load_cd_adj(num_classes, t).cuda()
+        self.adj = Parameter(load_adj(num_classes, t, adj_path), requires_grad=True)
+        # self.adj = load_cd_adj(num_classes, t).cuda()
 
         self.label_mask = load_label_mask(mask_path)
-        self.words = Parameter(load_emb(emb_path), requires_grad=True)
+        self.words = load_emb(emb_path)
 
     def forward(self, images, cds):
         images = self.conv(images)
         images = images.view(images.size(0), -1)
 
         label_mask = self.label_mask[cds].unsqueeze(-1)
-        adj = self.adj[cds]
-        adj = gen_adj(adj)
+        # adj = self.adj[cds]
+        # adj = gen_cd_adj(adj)
+        adj = gen_adj(self.adj)
 
         x = self.words * label_mask.ceil()
         x = self.gc1(x, adj)
@@ -40,7 +41,7 @@ class MLGCN(nn.Module):
 
         x = torch.matmul(x, images.double().unsqueeze(-1))
         x = x * label_mask
-        x[torch.where(label_mask == 0)] = -1e10
+        x[torch.where(label_mask == 0)] += -1e10
         x = torch.sigmoid(x.squeeze(-1))
         # x = f.softmax(x.squeeze(-1), dim=1)
         return x
