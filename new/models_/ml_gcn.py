@@ -20,7 +20,7 @@ class MLGCN(nn.Module):
         self.relu = nn.LeakyReLU(0.2)
 
         # self.adj = Parameter(load_adj(num_classes, t, adj_path), requires_grad=True)
-        self.adj = load_cd_adj(num_classes, t)
+        self.adj = load_cd_adj(num_classes, t).cuda()
 
         self.label_mask = load_label_mask(mask_path)
         self.words = Parameter(load_emb(emb_path), requires_grad=True)
