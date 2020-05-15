@@ -20,6 +20,7 @@ class MLGCN(nn.Module):
         self.gc2 = GraphConvolution(1024, 2048)
         self.relu = nn.LeakyReLU(0.2)
         self.image_fc = nn.Linear(2048, in_channel)
+        self.cd_output = nn.Linear(2048, 50)
         self.fc = nn.Linear(in_channel * 3, in_channel).double()
         self.cd_emb = nn.Embedding(50, in_channel)
 
@@ -54,8 +55,9 @@ class MLGCN(nn.Module):
         x = x * label_mask
         x[torch.where(label_mask == 0)] += -1e10
         x = torch.sigmoid(x.squeeze(-1))
-        # x = f.softmax(x.squeeze(-1), dim=1)
-        return x
+
+        cd_ = self.cd_output(images)
+        return x, cd_
 
     def get_config_optim(self, lr, lrp):
         return [
