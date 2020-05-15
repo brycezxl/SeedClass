@@ -55,30 +55,30 @@ class MLGCN(nn.Module):
 
         cds_emb = self.fc2(cds_emb)
         x_ = self.attn(images.unsqueeze(1), x, x).squeeze(1)
-        x_ = self.fc1(torch.cat((
-            x_,
-            images,
-            cds_emb,
-        ), dim=-1))
+        # x_ = self.fc1(torch.cat((
+        #     x_,
+        #     images,
+        #     cds_emb,
+        # ), dim=-1))
 
-        hx = x_
-        cx = x_
+        hx = images * cds_emb
+        cx = hx
         output = []
         for i in range(5):
             hx, cx = self.rnn(x_, (hx, cx))
             result = self.out(hx)
-            result[torch.where(label_mask.squeeze(-1) == 0)] = -1e10
+            result[torch.where(label_mask.squeeze(-1) == 0)] = -1
             output.append(result)
             result_idx = torch.argmax(result, dim=-1)
             x_new = torch.zeros_like(x_)
             for k in range(x_.size(0)):
                 x_new[k, :] = x[k, result_idx[k], :]
             x_ = x_new
-            x_ = self.fc1(torch.cat((
-                x_,
-                images,
-                cds_emb,
-            ), dim=-1))
+            # x_ = self.fc1(torch.cat((
+            #     x_,
+            #     images,
+            #     cds_emb,
+            # ), dim=-1))
         return output
 
     def get_config_optim(self, lr, lrp):
