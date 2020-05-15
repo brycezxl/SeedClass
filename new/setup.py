@@ -190,11 +190,19 @@ def gen_label_mask():
     label_mask = np.zeros((50, 374))
     for cd, v in label_of_cd.items():
         total = 0
+        n = 0
+        n_ = 0
+        t_ = 0
+        for label, count in v.items():
+            total += count
+            n += 1
         for label, count in v.items():
             if count < 5:
                 continue
+            n_ += 1
+            t_ += count
             label_mask[cd][label] = count
-            total += count
+        print(t_, total, n, n_)
         label_mask[cd] = label_mask[cd] / total
     with open(label_mask_path, "wb+") as f:
         pickle.dump(label_mask, f, protocol=pickle.HIGHEST_PROTOCOL)
