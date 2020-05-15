@@ -23,12 +23,12 @@ class F1Score(object):
         self.best_f1 = 0
 
     def update(self, predict, label):
-        predict_total = torch.zeros(374)
-        label_total = torch.zeros(374)
+        predict_total = torch.zeros(predict[0].size(0), 374)
+        label_total = torch.zeros(predict[0].size(0), 374)
         for i in range(len(predict)):
-            for j in range(predict[i].size(0)):
-                predict_total[torch.argmax(predict[i][j, :])] += 1
-                label_total[label[i][j]] += 1
+            for j in range(predict[0].size(0)):
+                predict_total[j, torch.argmax(predict[i][j, :])] = 1
+                label_total[j, label[i][j]] = 1
 
         self.tp += torch.sum(label_total * predict_total, dim=0)
         self.fp += torch.sum((torch.tensor(1) - label_total) * predict_total, dim=0)

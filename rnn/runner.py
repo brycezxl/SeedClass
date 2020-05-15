@@ -77,6 +77,7 @@ class Runner:
             loss = (self.ce(outputs[0], labels[0].cuda()) + self.ce(outputs[1], labels[1].cuda()) +
                     self.ce(outputs[2], labels[2].cuda()) + self.ce(outputs[3], labels[3].cuda()) +
                     self.ce(outputs[4], labels[4].cuda()))
+            # self.f1_score.update(outputs, labels)
             loss.backward(loss)
             self.optimizer.step()
             self.scheduler.step(epoch - 1 + batch / len(self.train_loader))
