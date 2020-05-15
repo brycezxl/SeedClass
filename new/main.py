@@ -12,13 +12,13 @@ def parse_args():
                         help='')
     parser.add_argument('--pretrain', action='store_true', default=False,
                         help='train the model')
-    parser.add_argument('--batch-size', type=int, default=16,
+    parser.add_argument('--batch-size', type=int, default=8,
                         help='')
     parser.add_argument('--dropout', type=float, default=0.2,
                         help='')
     parser.add_argument('--max-num-epochs', type=int, default=50,
                         help='')
-    parser.add_argument('--d-model', type=int, default=512,
+    parser.add_argument('--d-model', type=int, default=2048,
                         help='')
     parser.add_argument('--lr', default=1e-4, type=float,
                         help='learning rate')

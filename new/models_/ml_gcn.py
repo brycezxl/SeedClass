@@ -28,6 +28,8 @@ class MLGCN(nn.Module):
         self.label_mask = load_label_mask(mask_path)
         self.words = load_emb(emb_path)
 
+        self.attn = Attention(self.args).double()
+
     def forward(self, images, cds):
         images = self.conv(images)
         images = images.view(images.size(0), -1)
@@ -48,12 +50,13 @@ class MLGCN(nn.Module):
         x = self.relu(x)
         x = self.gc2(f.dropout(x, p=self.args.dropout), adj)
 
+        x_ = self.attn(images.unsqueeze(-2).double(), x, x).squeeze(-2)
         x = torch.matmul(x, images.unsqueeze(-1).double())
         x = x * label_mask
         x[torch.where(label_mask == 0)] += -1e10
         x = torch.sigmoid(x.squeeze(-1))
 
-        return x
+        return x, x_, images
 
     def get_config_optim(self, lr, lrp):
         return [
