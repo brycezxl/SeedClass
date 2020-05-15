@@ -46,10 +46,11 @@ class Runner:
 
         self.f1_loss = f1_loss
         self.bce = nn.BCELoss()
+        self.ce = nn.CrossEntropyLoss()
 
-        self.f1_score_2 = F1Score()
-        self.f1_score_4 = F1Score()
-        self.f1_score_6 = F1Score()
+        self.f1_score_2 = F1Score2()
+        self.f1_score_4 = F1Score4()
+        self.f1_score_6 = F1Score6()
         self.analysis_meter = AnalysisMeter()
 
     def train(self):
@@ -97,9 +98,9 @@ class Runner:
                     cds = cds.to(self.device)
                     outputs = self.model(images, cds)
                     loss = self.bce(outputs, labels)
-                    self.f1_score_2.update(outputs, labels, 0.2)
-                    self.f1_score_4.update(outputs, labels, 0.4)
-                    self.f1_score_6.update(outputs, labels, 0.6)
+                    self.f1_score_2.update(outputs, labels)
+                    self.f1_score_4.update(outputs, labels)
+                    self.f1_score_6.update(outputs, labels)
                     loss_meter.update(loss.item())
                     # if self.f1_score.best_f1 > 0.6:
                     #     self.analysis_meter.difficult_image(outputs, labels, idx)

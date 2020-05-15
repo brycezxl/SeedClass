@@ -15,14 +15,14 @@ def f1_loss(predict, label):
     return -torch.mean(f1) + torch.tensor(1)
 
 
-class F1Score(object):
+class F1Score2(object):
     def __init__(self):
         self.tp = torch.zeros(374).cuda()
         self.fp = torch.zeros(374).cuda()
         self.fn = torch.zeros(374).cuda()
         self.best_f1 = 0
 
-    def update(self, predict, label, t=0.2):
+    def update(self, predict, label):
         # label_ = torch.sum(label, dim=-1)
         x = torch.zeros_like(predict)
         # for i in range(x.size(0)):
@@ -30,7 +30,93 @@ class F1Score(object):
         #     for j in range(x.size(1)):
         #         if predict[i][j] > threshold:
         #             x[i][j] = 1
-        x[torch.where(predict > t)] = 1
+        x[torch.where(predict > 0.2)] = 1
+        predict = x
+
+        self.tp += torch.sum(label * predict, dim=0)
+        self.fp += torch.sum((1 - label) * predict, dim=0)
+        self.fn += torch.sum(label * (torch.tensor(1) - predict), dim=0)
+
+    def get_f1(self):
+        p = self.tp / (self.tp + self.fp)
+        r = self.tp / (self.tp + self.fn)
+        f1 = 2 * p * r / (p + r)
+        f1 = torch.where(torch.isnan(f1), torch.zeros_like(f1), f1)
+
+        return torch.mean(f1)
+
+    def best(self):
+        f1_ = self.get_f1()
+        if f1_ > self.best_f1:
+            self.best_f1 = f1_
+            return True
+        return False
+
+    def reset(self):
+        self.tp = torch.zeros(374).cuda()
+        self.fp = torch.zeros(374).cuda()
+        self.fn = torch.zeros(374).cuda()
+
+
+class F1Score4(object):
+    def __init__(self):
+        self.tp = torch.zeros(374).cuda()
+        self.fp = torch.zeros(374).cuda()
+        self.fn = torch.zeros(374).cuda()
+        self.best_f1 = 0
+
+    def update(self, predict, label):
+        # label_ = torch.sum(label, dim=-1)
+        x = torch.zeros_like(predict)
+        # for i in range(x.size(0)):
+        #     threshold = 1 / float(label_[i] + 1)
+        #     for j in range(x.size(1)):
+        #         if predict[i][j] > threshold:
+        #             x[i][j] = 1
+        x[torch.where(predict > 0.4)] = 1
+        predict = x
+
+        self.tp += torch.sum(label * predict, dim=0)
+        self.fp += torch.sum((1 - label) * predict, dim=0)
+        self.fn += torch.sum(label * (torch.tensor(1) - predict), dim=0)
+
+    def get_f1(self):
+        p = self.tp / (self.tp + self.fp)
+        r = self.tp / (self.tp + self.fn)
+        f1 = 2 * p * r / (p + r)
+        f1 = torch.where(torch.isnan(f1), torch.zeros_like(f1), f1)
+
+        return torch.mean(f1)
+
+    def best(self):
+        f1_ = self.get_f1()
+        if f1_ > self.best_f1:
+            self.best_f1 = f1_
+            return True
+        return False
+
+    def reset(self):
+        self.tp = torch.zeros(374).cuda()
+        self.fp = torch.zeros(374).cuda()
+        self.fn = torch.zeros(374).cuda()
+
+
+class F1Score6(object):
+    def __init__(self):
+        self.tp = torch.zeros(374).cuda()
+        self.fp = torch.zeros(374).cuda()
+        self.fn = torch.zeros(374).cuda()
+        self.best_f1 = 0
+
+    def update(self, predict, label):
+        # label_ = torch.sum(label, dim=-1)
+        x = torch.zeros_like(predict)
+        # for i in range(x.size(0)):
+        #     threshold = 1 / float(label_[i] + 1)
+        #     for j in range(x.size(1)):
+        #         if predict[i][j] > threshold:
+        #             x[i][j] = 1
+        x[torch.where(predict > 0.6)] = 1
         predict = x
 
         self.tp += torch.sum(label * predict, dim=0)
