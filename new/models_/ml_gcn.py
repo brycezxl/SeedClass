@@ -49,6 +49,7 @@ class MLGCN(nn.Module):
 
         x = torch.matmul(x, images.unsqueeze(-1).double())
         x = x * label_mask
+        x = torch.matmul(adj, x)
         x[torch.where(label_mask == 0)] += -1e10
         x = torch.sigmoid(x.squeeze(-1))
 
