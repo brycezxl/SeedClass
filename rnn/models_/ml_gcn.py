@@ -23,9 +23,15 @@ class MLGCN(nn.Module):
         self.fc = nn.Linear(in_channel * 3, in_channel).double()
         self.cd_emb = nn.Embedding(50, in_channel)
         self.adj = load_cd_adj(num_classes, t).cuda()
+        self.fc1 = nn.Linear(2048 * 3, 2048)
+        self.fc2 = nn.Linear(in_channel, 2048)
+
+        self.attn = Attention(args).double()
 
         self.label_mask = load_label_mask(mask_path)
         self.words = load_emb(emb_path)
+        self.rnn = nn.LSTMCell(2048, 2048)
+        self.out = nn.Linear(2048, 375)
 
     def forward(self, images, cds):
         images = self.conv(images)
@@ -33,11 +39,11 @@ class MLGCN(nn.Module):
 
         label_mask = self.label_mask[cds].unsqueeze(-1)
         x = self.words * label_mask.ceil()
-
+        cds_emb = self.cd_emb(cds)
         x = self.fc(torch.cat((
             x,
             x * self.image_fc(images).unsqueeze(-2),
-            x * self.cd_emb(cds).unsqueeze(-2),
+            x * cds_emb.unsqueeze(-2),
         ), dim=-1))
 
         adj = self.adj[cds]
@@ -45,14 +51,28 @@ class MLGCN(nn.Module):
 
         x = self.gc1(x, adj)
         x = self.relu(x)
-        x = self.gc2(x, adj)
+        x = self.gc2(x, adj).float()
 
-        x = torch.matmul(x, images.unsqueeze(-1).double())
-        x = x * label_mask
-        x[torch.where(label_mask == 0)] += -1e10
-        x = torch.sigmoid(x.squeeze(-1))
+        x_ = self.attn(images.unsqueeze(1), x, x).squeeze(1)
+        x_ = self.fc1(torch.cat((
+            x_,
+            images,
+            self.fc2(cds_emb),
+        ), dim=-1))
 
-        return x
+        hx = torch.zeros(x_.size(0), 2048).cuda()
+        cx = torch.zeros(x_.size(0), 2048).cuda()
+        output = []
+        for i in range(5):
+            hx, cx = self.rnn(x_, (hx, cx))
+            result = self.out(hx)
+            output.append(result)
+            result_idx = torch.argmax(result, dim=-1)
+            x_new = torch.zeros_like(x_)
+            for k in range(x_.size(0)):
+                x_new[k, :] = x[k, result_idx[k], :]
+            x_ = x_new
+        return output
 
     def get_config_optim(self, lr, lrp):
         return [
