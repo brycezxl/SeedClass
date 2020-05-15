@@ -22,7 +22,7 @@ class F1Score(object):
         self.fn = torch.zeros(374).cuda()
         self.best_f1 = 0
 
-    def update(self, predict, label):
+    def update(self, predict, label, t=0.2):
         # label_ = torch.sum(label, dim=-1)
         x = torch.zeros_like(predict)
         # for i in range(x.size(0)):
@@ -30,7 +30,7 @@ class F1Score(object):
         #     for j in range(x.size(1)):
         #         if predict[i][j] > threshold:
         #             x[i][j] = 1
-        x[torch.where(predict > 0.2)] = 1
+        x[torch.where(predict > t)] = 1
         predict = x
 
         self.tp += torch.sum(label * predict, dim=0)

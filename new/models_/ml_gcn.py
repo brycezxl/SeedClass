@@ -39,7 +39,7 @@ class MLGCN(nn.Module):
         x = self.fc(torch.cat((
             x,
             (x * self.image_fc(images).unsqueeze(-2)),
-            (x * self.cd_emb(cds).unsqueeze(-2))
+            (x * self.cd_emb(cds).unsqueeze(-2)),
         ), dim=-1))
 
         adj = self.adj[cds]
