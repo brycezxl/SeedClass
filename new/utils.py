@@ -172,47 +172,6 @@ def gen_adj(a):
     return adj.detach()
 
 
-class F1Score(object):
-    def __init__(self):
-        self.tp = torch.zeros(374).cuda()
-        self.fp = torch.zeros(374).cuda()
-        self.fn = torch.zeros(374).cuda()
-        self.best_f1 = 0
-
-    def update(self, predict, label):
-        label = label.cuda()
-        x = torch.zeros_like(predict).cuda()
-        threshold = 0.2
-        for i in range(x.size(0)):
-            for j in range(x.size(1)):
-                if predict[i][j] > threshold:
-                    x[i][j] = 1
-        predict = x
-
-        self.tp += torch.sum(label * predict, dim=0)
-        self.fp += torch.sum((1 - label) * predict, dim=0)
-        self.fn += torch.sum(label * (torch.tensor(1) - predict), dim=0)
-
-    def get_f1(self):
-        p = self.tp / (self.tp + self.fp + 1e-5)
-        r = self.tp / (self.tp + self.fn + 1e-5)
-        f1 = (2 * p * r) / (p + r + 1e-5)
-
-        return torch.mean(f1)
-
-    def best(self):
-        f1_ = self.get_f1()
-        if f1_ > self.best_f1:
-            self.best_f1 = f1_
-            return True
-        return False
-
-    def reset(self):
-        self.tp = torch.zeros(374).cuda()
-        self.fp = torch.zeros(374).cuda()
-        self.fn = torch.zeros(374).cuda()
-
-
 def load_label_mask(path):
     result = pickle.load(open(path, 'rb'))
     result = torch.from_numpy(result).cuda()
