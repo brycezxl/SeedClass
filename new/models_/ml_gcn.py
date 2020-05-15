@@ -26,7 +26,7 @@ class MLGCN(nn.Module):
 
         # self.adj = Parameter(load_adj(num_classes, t, adj_path), requires_grad=True)
         # self.adj = load_cd_adj(num_classes, t).cuda()
-        self.adj = Parameter(load_cd_adj(num_classes, t), requires_grad=True)
+        self.adj = load_cd_adj(num_classes, t)
 
         self.label_mask = load_label_mask(mask_path)
         self.words = load_emb(emb_path)
