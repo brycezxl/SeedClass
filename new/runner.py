@@ -49,8 +49,8 @@ class Runner:
         self.ce = nn.CrossEntropyLoss()
 
         self.f1_score_2 = F1Score2()
-        self.f1_score_4 = F1Score4()
-        self.f1_score_6 = F1Score6()
+        self.f1_score_4 = F1Score1()
+        self.f1_score_6 = F1Score05()
         self.analysis_meter = AnalysisMeter()
 
     def train(self):

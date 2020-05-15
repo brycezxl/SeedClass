@@ -58,7 +58,7 @@ class F1Score2(object):
         self.fn = torch.zeros(374).cuda()
 
 
-class F1Score4(object):
+class F1Score1(object):
     def __init__(self):
         self.tp = torch.zeros(374).cuda()
         self.fp = torch.zeros(374).cuda()
@@ -73,7 +73,7 @@ class F1Score4(object):
         #     for j in range(x.size(1)):
         #         if predict[i][j] > threshold:
         #             x[i][j] = 1
-        x[torch.where(predict > 0.4)] = 1
+        x[torch.where(predict > 0.1)] = 1
         predict = x
 
         self.tp += torch.sum(label * predict, dim=0)
@@ -101,7 +101,7 @@ class F1Score4(object):
         self.fn = torch.zeros(374).cuda()
 
 
-class F1Score6(object):
+class F1Score05(object):
     def __init__(self):
         self.tp = torch.zeros(374).cuda()
         self.fp = torch.zeros(374).cuda()
@@ -116,7 +116,7 @@ class F1Score6(object):
         #     for j in range(x.size(1)):
         #         if predict[i][j] > threshold:
         #             x[i][j] = 1
-        x[torch.where(predict > 0.6)] = 1
+        x[torch.where(predict > 0.05)] = 1
         predict = x
 
         self.tp += torch.sum(label * predict, dim=0)
