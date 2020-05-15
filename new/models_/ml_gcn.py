@@ -44,9 +44,9 @@ class MLGCN(nn.Module):
         adj = self.adj[cds]
         adj = gen_cd_adj(adj)
 
-        x = self.gc1(f.dropout(x, p=self.args.dropout), adj)
+        x = self.gc1(x, adj)
         x = self.relu(x)
-        x = self.gc2(f.dropout(x, p=self.args.dropout), adj)
+        x = self.gc2(x, adj)
 
         x = torch.matmul(x, images.unsqueeze(-1).double())
         x = x * label_mask
