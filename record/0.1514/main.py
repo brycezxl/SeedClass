@@ -22,8 +22,6 @@ def parse_args():
                         help='')
     parser.add_argument('--lr', default=1e-4, type=float,
                         help='learning rate')
-    parser.add_argument('--lrp', default=0.1, type=float,
-                        help='learning rate')
     return parser.parse_args()
 
 

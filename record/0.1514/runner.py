@@ -1,7 +1,7 @@
 import logging
-import random
 
 import torch.backends.cudnn
+import tqdm
 from torch.utils.data import DataLoader
 
 from get_dataset import Corel
@@ -34,7 +34,7 @@ class Runner:
         torch.backends.cudnn.deterministic = True
 
     def _build_model(self):
-        self.model = MLGCN(args=self.args, num_classes=374, t=0.05, adj_path='../corel_5k/adj.pkl',
+        self.model = MLGCN(num_classes=374, t=0.05, adj_path='../corel_5k/adj.pkl',
                            mask_path='../corel_5k/label_mask.pkl', emb_path='../corel_5k/word2vec.pkl',
                            pre_trained=self.args.pretrain)
 
@@ -65,7 +65,7 @@ class Runner:
     def _train_one_epoch(self, epoch):
         self.model.train()
         loss_meter = AverageMeter()
-        for batch, ((images, cds), labels) in enumerate(self.train_loader, 1):
+        for batch, ((images, cds), labels) in enumerate(tqdm.tqdm(self.train_loader), 1):
 
             images = images.to(self.device)
             labels = labels.to(self.device)
