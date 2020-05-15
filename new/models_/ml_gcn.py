@@ -15,7 +15,7 @@ class MLGCN(nn.Module):
         self.num_classes = num_classes
 
         # self.conv = ResNet(pre_trained=pre_trained)
-        self.conv = AlexNet()
+        # self.conv = AlexNet()
         self.gc1 = GraphConvolution(in_channel, 1024)
         self.gc2 = GraphConvolution(1024, 2048)
         self.relu = nn.LeakyReLU(0.2)
@@ -28,8 +28,8 @@ class MLGCN(nn.Module):
         self.words = load_emb(emb_path)
 
     def forward(self, images, cds):
-        images = self.conv(images)
-        images = images.view(images.size(0), -1)
+        # images = self.conv(images)
+        # images = images.view(images.size(0), -1)
 
         label_mask = self.label_mask[cds].unsqueeze(-1)
         x = self.words * label_mask.ceil()
@@ -53,13 +53,6 @@ class MLGCN(nn.Module):
         x = torch.sigmoid(x.squeeze(-1))
 
         return x
-
-    def get_config_optim(self, lr, lrp):
-        return [
-                {'params': self.features.parameters(), 'lr': lr * lrp},
-                {'params': self.gc1.parameters(), 'lr': lr},
-                {'params': self.gc2.parameters(), 'lr': lr},
-                ]
 
 
 class GraphConvolution(nn.Module):

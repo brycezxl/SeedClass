@@ -1,6 +1,6 @@
 import logging
 import random
-
+from models_.model import Model
 import torch.backends.cudnn
 from torch.utils.data import DataLoader
 from torch import nn
@@ -34,14 +34,14 @@ class Runner:
         torch.backends.cudnn.deterministic = True
 
     def _build_model(self):
-        self.model = MLGCN(args=self.args, num_classes=374, t=0.05, adj_path='../corel_5k/adj.pkl',
+        self.model = Model(args=self.args, num_classes=374, t=0.05, adj_path='../corel_5k/adj.pkl',
                            mask_path='../corel_5k/label_mask.pkl', emb_path='../corel_5k/word2vec.pkl',
                            pre_trained=self.args.pretrain)
 
         self.device = torch.device('cuda:0')
         self.model = self.model.to(self.device)
 
-        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.args.lr)
+        self.optimizer = torch.optim.Adam(self.model.get_config_optim(self.args.lr, self.args.lrp))
         self.scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(self.optimizer, T_0=5)
 
         self.f1_loss = f1_loss

@@ -24,6 +24,8 @@ def parse_args():
                         help='learning rate')
     parser.add_argument('--lrp', default=0.1, type=float,
                         help='learning rate')
+    parser.add_argument('--res', action='store_true', default=True,
+                        help='train the model')
     return parser.parse_args()
 
 
