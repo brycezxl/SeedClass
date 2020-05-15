@@ -144,13 +144,13 @@ def load_cd_adj(num_classes, t):
         # _adj[i, :, :] = _adj[i, :, :] / np.max(_adj[i, :, :])
 
         for j in range(_adj.shape[1]):
-            _adj[i, j, :] = (_adj[i, j, :] + 1e-10) / (np.sum(_adj[i, j, :]) + 1e-4)
+            # _adj[i, j, :] = (_adj[i, j, :] + 1e-10) / (np.sum(_adj[i, j, :]) + 1e-4)
 
-        # a = (_adj[i, :, :] + 1e-10) / (np.sum(_adj[i, :, :], axis=1) + 1e-4)
-        # t = np.median(a[a > 1e-4])
-        # a[a < t] = 0
-        # a[a >= t] = 1
-        # _adj[i, :, :] = a * 0.25 / (a.sum(0, keepdims=True) + 1e-6)
+            a = (_adj[i, j, :] + 1e-10) / (np.sum(_adj[i, j, :]) + 1e-4)
+            t = np.median(a[a > 1e-4])
+            a[a < t] = 0
+            a[a >= t] = 1
+            _adj[i, j, :] = a * 0.25 / (a.sum(0, keepdims=True) + 1e-6)
 
     _adj = _adj + np.identity(num_classes, np.int)
     _adj = torch.from_numpy(_adj).double()
