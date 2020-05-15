@@ -31,7 +31,7 @@ class MLGCN(nn.Module):
         self.label_mask = load_label_mask(mask_path)
         self.words = load_emb(emb_path)
         self.rnn = nn.LSTMCell(2048, 2048)
-        self.out = nn.Linear(2048, 375)
+        self.out = nn.Linear(2048, 374)
 
     def forward(self, images, cds):
         images = self.conv(images)

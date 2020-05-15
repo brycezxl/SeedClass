@@ -57,7 +57,7 @@ class Corel(data.Dataset):
                     label = []
                     for i in self.info_labels[idx]:
                         label.append(i - 1)
-                    label += [374 for _ in range(5 - len(label))]
+                    label += [label[-1] for _ in range(5 - len(label))]
                     self.data.append((img, class_idx, label))
             class_idx += 1
         random.shuffle(self.data)

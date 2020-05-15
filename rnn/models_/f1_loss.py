@@ -23,8 +23,8 @@ class F1Score(object):
         self.best_f1 = 0
 
     def update(self, predict, label):
-        predict_total = torch.zeros(375)
-        label_total = torch.zeros(375)
+        predict_total = torch.zeros(374)
+        label_total = torch.zeros(374)
         for i in range(len(predict)):
             for j in range(predict[i].size(0)):
                 predict_total += torch.argmax(predict[i][j, :], dim=-1)
