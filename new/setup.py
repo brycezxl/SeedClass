@@ -205,5 +205,5 @@ if __name__ == '__main__':
     # gen_emb()
     # heat_map()
     # analysis_occur()
-    # gen_label_mask()
-    gen_cd_adj()
+    gen_label_mask()
+    # gen_cd_adj()

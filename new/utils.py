@@ -143,7 +143,8 @@ def load_cd_adj(num_classes, t):
 
         # _adj[i, :, :] = _adj[i, :, :] / np.max(_adj[i, :, :])
 
-        _adj[i, :, :] = (_adj[i, :, :] + 1e-10) / (np.sum(_adj[i, :, :], axis=1) + 1e-4)
+        for j in range(_adj.shape[1]):
+            _adj[i, j, :] = (_adj[i, j, :] + 1e-10) / (np.sum(_adj[i, j, :]) + 1e-4)
 
         # a = (_adj[i, :, :] + 1e-10) / (np.sum(_adj[i, :, :], axis=1) + 1e-4)
         # t = np.median(a[a > 1e-4])
