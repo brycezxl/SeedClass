@@ -27,7 +27,7 @@ class F1Score(object):
         label_total = torch.zeros(374)
         for i in range(len(predict)):
             for j in range(predict[i].size(0)):
-                predict_total += torch.argmax(predict[i][j, :], dim=-1)
+                predict_total[torch.argmax(predict[i][j, :])] += 1
                 label_total[label[i][j]] += 1
 
         self.tp += torch.sum(label_total * predict_total, dim=0)
