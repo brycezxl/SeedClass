@@ -52,12 +52,13 @@ class MLGCN(nn.Module):
         x = self.gc2(x, adj)
 
         x = torch.matmul(x, images.unsqueeze(-1).double())
-        x = x * label_mask
+        x = x * label_mask * 10
         x[torch.where(label_mask == 0)] += -1e10
         x = torch.sigmoid(x.squeeze(-1))
 
-        cd_ = self.cd_output(images)
-        return x, cd_
+        # cd_ = self.cd_output(images)
+        # return x, cd_
+        return x
 
     def get_config_optim(self, lr, lrp):
         return [
