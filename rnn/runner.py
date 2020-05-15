@@ -49,9 +49,7 @@ class Runner:
         self.ce = nn.CrossEntropyLoss()
         self.mse = nn.MSELoss()
 
-        self.f1_score_2 = F1Score2()
-        self.f1_score_4 = F1Score1()
-        self.f1_score_6 = F1Score05()
+        self.f1_score = F1Score()
         self.analysis_meter = AnalysisMeter()
 
     def train(self):
@@ -79,7 +77,7 @@ class Runner:
             loss = (self.ce(outputs[0], labels[0].cuda()) + self.ce(outputs[1], labels[1].cuda()) +
                     self.ce(outputs[2], labels[2].cuda()) + self.ce(outputs[3], labels[3].cuda()) +
                     self.ce(outputs[4], labels[4].cuda()))
-
+            self.f1_score.update(outputs, labels)
             loss.backward(loss)
             self.optimizer.step()
             self.scheduler.step(epoch - 1 + batch / len(self.train_loader))
@@ -101,16 +99,18 @@ class Runner:
                     cds = cds.to(self.device)
                     # outputs = self.model(images, cds)
                     outputs = self.model(images, cds)
-                    loss = self.bce(outputs, labels)
-                    self.f1_score_2.update(outputs, labels)
-                    self.f1_score_4.update(outputs, labels)
-                    self.f1_score_6.update(outputs, labels)
+
+                    loss = (self.ce(outputs[0], labels[0].cuda()) + self.ce(outputs[1], labels[1].cuda()) +
+                            self.ce(outputs[2], labels[2].cuda()) + self.ce(outputs[3], labels[3].cuda()) +
+                            self.ce(outputs[4], labels[4].cuda()))
+
+                    self.f1_score.update(outputs, labels)
                     loss_meter.update(loss.item())
                     # if self.f1_score.best_f1 > 0.6:
                     #     self.analysis_meter.difficult_image(outputs, labels, idx)
-                print('Test Loss: %.4f | F1: %.4f %.4f %.4f | Best: %s' % (
-                    loss_meter.avg, self.f1_score_2.get_f1()
-                    , self.f1_score_4.get_f1(), self.f1_score_6.get_f1(), 'True' if self.f1_score_2.best() else 'False'
+                print('Test Loss: %.4f | F1: %.4f | Best: %s' % (
+                    loss_meter.avg, self.f1_score.get_f1()
+                    , 'True' if self.f1_score.best() else 'False'
                 ))
                 loss_meter.reset()
-                self.f1_score_2.reset()
+                self.f1_score.reset()
