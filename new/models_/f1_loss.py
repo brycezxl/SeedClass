@@ -30,7 +30,7 @@ class F1Score2(object):
         #     for j in range(x.size(1)):
         #         if predict[i][j] > threshold:
         #             x[i][j] = 1
-        x[torch.where(predict > 0.3)] = 1
+        x[torch.where(predict > 0.1)] = 1
         predict = x
 
         self.tp += torch.sum(label * predict, dim=0)
@@ -73,7 +73,7 @@ class F1Score1(object):
         #     for j in range(x.size(1)):
         #         if predict[i][j] > threshold:
         #             x[i][j] = 1
-        x[torch.where(predict > 0.5)] = 1
+        x[torch.where(predict > 0.2)] = 1
         predict = x
 
         self.tp += torch.sum(label * predict, dim=0)
@@ -116,7 +116,7 @@ class F1Score05(object):
         #     for j in range(x.size(1)):
         #         if predict[i][j] > threshold:
         #             x[i][j] = 1
-        x[torch.where(predict > 0.7)] = 1
+        x[torch.where(predict > 0.3)] = 1
         predict = x
 
         self.tp += torch.sum(label * predict, dim=0)

@@ -56,9 +56,9 @@ class MLGCN(nn.Module):
         x[torch.where(label_mask == 0)] += -1e10
         x = torch.sigmoid(x.squeeze(-1))
 
-        # cd_ = self.cd_output(images)
-        # return x, cd_
-        return x
+        cd_ = self.cd_output(images)
+        return x, cd_
+        # return x
 
     def get_config_optim(self, lr, lrp):
         return [
