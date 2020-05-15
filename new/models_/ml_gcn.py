@@ -22,7 +22,7 @@ class MLGCN(nn.Module):
         self.image_fc = nn.Linear(2048, in_channel)
         self.fc = nn.Linear(in_channel * 3, in_channel).double()
         self.cd_emb = nn.Embedding(50, in_channel)
-
+        self.gc3 = GraphConvolution(1, 1)
         self.adj = load_cd_adj(num_classes, t).cuda()
 
         self.label_mask = load_label_mask(mask_path)
@@ -49,6 +49,7 @@ class MLGCN(nn.Module):
         x = self.gc2(x, adj)
 
         x = torch.matmul(x, images.unsqueeze(-1).double())
+        x = self.gc3(x, adj)
         x = x * label_mask
         x[torch.where(label_mask == 0)] += -1e10
         x = torch.sigmoid(x.squeeze(-1))
