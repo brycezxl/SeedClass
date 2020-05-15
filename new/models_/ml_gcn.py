@@ -20,13 +20,10 @@ class MLGCN(nn.Module):
         self.gc2 = GraphConvolution(1024, 2048)
         self.relu = nn.LeakyReLU(0.2)
         self.image_fc = nn.Linear(2048, in_channel)
-        self.cd_output = nn.Linear(2048, 50)
         self.fc = nn.Linear(in_channel * 3, in_channel).double()
         self.cd_emb = nn.Embedding(50, in_channel)
 
-        # self.adj = Parameter(load_adj(num_classes, t, adj_path), requires_grad=True)
-        # self.adj = load_cd_adj(num_classes, t).cuda()
-        self.adj = load_cd_adj(num_classes, t)
+        self.adj = load_cd_adj(num_classes, t).cuda()
 
         self.label_mask = load_label_mask(mask_path)
         self.words = load_emb(emb_path)
@@ -40,25 +37,22 @@ class MLGCN(nn.Module):
 
         x = self.fc(torch.cat((
             x,
-            (x * self.image_fc(images).unsqueeze(-2)),
-            (x * self.cd_emb(cds).unsqueeze(-2)),
+            f.dropout(x * self.image_fc(images).unsqueeze(-2), p=self.args.dropout),
+            f.dropout(x * self.cd_emb(cds).unsqueeze(-2), p=self.args.dropout),
         ), dim=-1))
 
         adj = self.adj[cds]
         adj = gen_cd_adj(adj)
-        # adj = gen_adj(self.adj)
 
-        x = self.gc1(x, adj)
+        x = self.gc1(f.dropout(x, p=self.args.dropout), adj)
         x = self.relu(x)
-        x = self.gc2(x, adj)
+        x = self.gc2(f.dropout(x, p=self.args.dropout), adj)
 
         x = torch.matmul(x, images.unsqueeze(-1).double())
         x = x * label_mask
         x[torch.where(label_mask == 0)] += -1e10
         x = torch.sigmoid(x.squeeze(-1))
 
-        # cd_ = self.cd_output(images)
-        # return x, cd_
         return x
 
     def get_config_optim(self, lr, lrp):
