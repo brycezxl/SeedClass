@@ -25,7 +25,8 @@ class MLGCN(nn.Module):
         self.cd_emb = nn.Embedding(50, in_channel)
 
         # self.adj = Parameter(load_adj(num_classes, t, adj_path), requires_grad=True)
-        self.adj = load_cd_adj(num_classes, t).cuda()
+        # self.adj = load_cd_adj(num_classes, t).cuda()
+        self.adj = Parameter(load_cd_adj(num_classes, t), requires_grad=True)
 
         self.label_mask = load_label_mask(mask_path)
         self.words = load_emb(emb_path)
@@ -52,13 +53,13 @@ class MLGCN(nn.Module):
         x = self.gc2(x, adj)
 
         x = torch.matmul(x, images.unsqueeze(-1).double())
-        x = x * label_mask * 10
+        x = x * label_mask
         x[torch.where(label_mask == 0)] += -1e10
         x = torch.sigmoid(x.squeeze(-1))
 
-        cd_ = self.cd_output(images)
-        return x, cd_
-        # return x
+        # cd_ = self.cd_output(images)
+        # return x, cd_
+        return x
 
     def get_config_optim(self, lr, lrp):
         return [
