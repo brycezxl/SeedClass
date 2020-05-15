@@ -141,7 +141,7 @@ def load_cd_adj(num_classes, t):
     _adj = pickle.load(open("../corel_5k/cd_adj.pkl", 'rb'))
     for i in range(_adj.shape[0]):
 
-        _adj[i, :, :] = _adj[i, :, :] / np.max(_adj[i, :, :])
+        # _adj[i, :, :] = _adj[i, :, :] / np.max(_adj[i, :, :])
 
         a = _adj[i, :, :] = _adj[i, :, :] / np.max(_adj[i, :, :])
         t = np.median(a[a > 1e-4])
