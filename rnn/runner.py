@@ -77,7 +77,6 @@ class Runner:
             loss = (self.ce(outputs[0], labels[0].cuda()) + self.ce(outputs[1], labels[1].cuda()) +
                     self.ce(outputs[2], labels[2].cuda()) + self.ce(outputs[3], labels[3].cuda()) +
                     self.ce(outputs[4], labels[4].cuda()))
-            self.f1_score.update(outputs, labels)
             loss.backward(loss)
             self.optimizer.step()
             self.scheduler.step(epoch - 1 + batch / len(self.train_loader))
@@ -95,9 +94,7 @@ class Runner:
             for data_loader in data_loaders:
                 for batch, ((images, cds), labels) in enumerate(data_loader, 1):
                     images = images.to(self.device)
-                    labels = labels.to(self.device)
                     cds = cds.to(self.device)
-                    # outputs = self.model(images, cds)
                     outputs = self.model(images, cds)
 
                     loss = (self.ce(outputs[0], labels[0].cuda()) + self.ce(outputs[1], labels[1].cuda()) +
