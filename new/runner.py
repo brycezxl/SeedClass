@@ -102,7 +102,7 @@ class Runner:
                     labels = labels.to(self.device)
                     cds = cds.to(self.device)
                     # outputs = self.model(images, cds)
-                    outputs = self.model(images, cds)
+                    outputs, _ = self.model(images, cds)
                     loss = self.bce(outputs, labels)
                     self.f1_score_03.update(outputs, labels)
                     self.f1_score_05.update(outputs, labels)
