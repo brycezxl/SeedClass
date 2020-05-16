@@ -70,11 +70,12 @@ class MLGCN(nn.Module):
         # x_ = torch.mean((x_ - images.unsqueeze(1).double()) ** 2 / 2048)
 
         x = torch.matmul(x, images.unsqueeze(-1).double())
-        label_mask[torch.where(label_mask == 0)] = 1e30
-        label_mask = torch.clamp(1 / label_mask, max=10)
         x = x * label_mask.ceil()
         x[torch.where(label_mask == 0)] += -1e10
         x = torch.sigmoid(x.squeeze(-1))
+        label_mask[torch.where(label_mask == 0)] = 1
+        label_mask = (1 / label_mask) ** 0.25 / 2
+        x = torch.clamp(x * label_mask.squeeze(-1), max=1)
 
         return x
 
