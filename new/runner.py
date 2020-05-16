@@ -49,12 +49,12 @@ class Runner:
         self.ce = nn.CrossEntropyLoss()
         self.mse = nn.MSELoss()
 
-        self.f1_score_05 = F1Score(0.05)
-        self.f1_score_05_add = F1Score(0.05, True)
-        self.f1_score_1 = F1Score(0.1)
-        self.f1_score_1_add = F1Score(0.1, True)
-        self.f1_score_2 = F1Score(0.2)
-        self.f1_score_2_add = F1Score(0.2, True)
+        self.f1_score_05 = F1Score(0.1)
+        self.f1_score_05_add = F1Score(0.1, True)
+        self.f1_score_1 = F1Score(0.3)
+        self.f1_score_1_add = F1Score(0.3, True)
+        self.f1_score_2 = F1Score(0.5)
+        self.f1_score_2_add = F1Score(0.5, True)
         self.analysis_meter = AnalysisMeter()
 
     def train(self):
