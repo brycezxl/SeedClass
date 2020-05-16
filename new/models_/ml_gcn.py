@@ -16,10 +16,10 @@ class MLGCN(nn.Module):
 
         # self.conv = ResNet(pre_trained=pre_trained)
         # self.conv = AlexNet()
-        self.gc1_1 = GraphConvolution(in_channel, 512)
-        self.gc1_2 = GraphConvolution(in_channel, 512)
-        self.gc2_1 = GraphConvolution(512, 1024)
-        self.gc2_2 = GraphConvolution(512, 1024)
+        self.gc1_1 = GraphConvolution(in_channel, 1024)
+        self.gc1_2 = GraphConvolution(in_channel, 1024)
+        self.gc2_1 = GraphConvolution(1024, 2048)
+        self.gc2_2 = GraphConvolution(1024, 2048)
         self.relu = nn.LeakyReLU(0.2)
         self.image_fc = nn.Linear(2048, in_channel)
         self.fc = nn.Linear(in_channel * 3, in_channel).double()
@@ -50,13 +50,13 @@ class MLGCN(nn.Module):
         adj_cd = self.adj_cd[cds]
         adj_cd = gen_cd_adj(adj_cd)
         adj_emb = torch.matmul(x, x.transpose(-1, -2))
-        adj_emb = adj_emb / torch.sum(adj_emb, -1).unsqueeze(-1)
+        adj_emb = torch.clamp(adj_emb / torch.max(adj_emb, -1)[0].unsqueeze(-1), min=0, max=1)
         adj_emb = gen_cd_adj(adj_emb)
 
         x = (self.gc1_1(x, adj_cd), self.gc1_2(x, adj_emb))
         x = (self.relu(x[0]), self.relu(x[1]))
         x = (self.gc2_1(x[0], adj_cd), self.gc2_2(x[1], adj_emb))
-        x = torch.cat((x[0], x[1]), -1)
+        x = (x[0] + x[1]) / 2
 
         # x = x * images.unsqueeze(1).double()
         # x = self.out(x)

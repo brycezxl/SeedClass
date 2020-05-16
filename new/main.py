@@ -12,7 +12,7 @@ def parse_args():
                         help='')
     parser.add_argument('--pretrain', action='store_true', default=False,
                         help='train the model')
-    parser.add_argument('--batch-size', type=int, default=8,
+    parser.add_argument('--batch-size', type=int, default=2,
                         help='')
     parser.add_argument('--dropout', type=float, default=0.2,
                         help='')
