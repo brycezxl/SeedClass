@@ -37,7 +37,8 @@ class Runner:
         self.model = Model(args=self.args, num_classes=374, t=0.05, adj_path='../corel_5k/adj.pkl',
                            mask_path='../corel_5k/label_mask.pkl', emb_path='../corel_5k/word2vec.pkl',
                            pre_trained=self.args.pretrain)
-
+        if not self.args.train:
+            self.model.load_state_dict(torch.load('model.pkl'))
         self.device = torch.device('cuda:0')
         self.model = self.model.to(self.device)
 
@@ -73,10 +74,10 @@ class Runner:
             cds = cds.to(self.device)
             self.optimizer.zero_grad()
             # outputs, cd_ = self.model(images, cds)
-            outputs = self.model(images, cds)
+            outputs, l1, l2 = self.model(images, cds)
             loss = self.bce(outputs, labels)
-            # loss += self.ce(l_, cds) * 0.01
-            # loss += l_.cuda() * 0.05
+            loss += self.ce(l1, cds) * 1e-3
+            loss += l2.cuda() * 1e-3
             # loss += self.f1_loss(outputs, labels) / 4
             loss.backward(loss)
             self.optimizer.step()
@@ -97,7 +98,7 @@ class Runner:
                     images = images.to(self.device)
                     labels = labels.to(self.device)
                     cds = cds.to(self.device)
-                    outputs = self.model(images, cds)
+                    outputs, _, _ = self.model(images, cds)
                     loss = self.bce(outputs, labels)
 
                     self.f1_score_05.update(outputs, labels, cds)
@@ -114,7 +115,7 @@ class Runner:
                     self.f1_score_2.get_f1(),
                     'True' if self.f1_score_05.best() else 'False'
                 ))
-                if self.f1_score_05.best():
+                if self.f1_score_05.best() and self.args.save:
                     path = os.path.join(self.args.model_saved_path)
                     torch.save(self.model.state_dict(), path)
                     logging.info('model saved to %s' % path)
@@ -128,5 +129,5 @@ class Runner:
             images, cds = data.demo(self.args.demo_path, self.args.demo_class)
             images = images.to(self.device)
             cds = cds.to(self.device)
-            outputs, _ = self.model(images, cds)
+            outputs = self.model(images, cds)
             print(outputs[torch.where(outputs > 0.05)])

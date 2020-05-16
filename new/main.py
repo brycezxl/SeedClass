@@ -8,7 +8,7 @@ def parse_args():
                         help='train the model')
     parser.add_argument('--evaluate', action='store_true', default=False,
                         help='evaluate the model on dev set')
-    parser.add_argument('--model-saved-path', type=str, default='results/model',
+    parser.add_argument('--model-saved-path', type=str, default='results/model.pkl',
                         help='')
     parser.add_argument('--pretrain', action='store_true', default=False,
                         help='train the model')
@@ -25,6 +25,8 @@ def parse_args():
     parser.add_argument('--lrp', default=0.1, type=float,
                         help='learning rate')
     parser.add_argument('--res', action='store_true', default=False,
+                        help='train the model')
+    parser.add_argument('--save', action='store_true', default=False,
                         help='train the model')
     parser.add_argument('--demo-path', type=str, default='results/model',
                         help='')

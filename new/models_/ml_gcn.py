@@ -18,8 +18,10 @@ class MLGCN(nn.Module):
         # self.conv = AlexNet()
         self.gc1_1 = GraphConvolution(in_channel, 1024)
         self.gc1_2 = GraphConvolution(in_channel, 1024)
+        self.gc1_3 = GraphConvolution(in_channel, 1024)
         self.gc2_1 = GraphConvolution(1024, 2048)
         self.gc2_2 = GraphConvolution(1024, 2048)
+        self.gc2_3 = GraphConvolution(1024, 2048)
         self.relu = nn.LeakyReLU(0.2)
         self.image_fc = nn.Linear(2048, in_channel)
         self.fc = nn.Linear(in_channel * 3, in_channel).double()
@@ -50,30 +52,30 @@ class MLGCN(nn.Module):
         adj_cd = self.adj_cd[cds]
         adj_cd = gen_cd_adj(adj_cd)
 
-        # adj_emb = torch.matmul(x, x.transpose(-1, -2))
-        # adj_emb = torch.sigmoid(adj_emb)
-        # adj_emb = gen_cd_adj(adj_emb)
+        adj_emb = torch.matmul(x, x.transpose(-1, -2))
+        adj_emb = torch.sigmoid(adj_emb)
+        adj_emb = gen_cd_adj(adj_emb)
 
-        # x = x * label_mask.ceil()
-        # adj_emb = gen_adj(self.adj_all)
+        x = x * label_mask.ceil()
+        adj_all = gen_adj(self.adj_all)
 
-        # x = (self.gc1_1(x, adj_cd), self.gc1_2(x, adj_emb))
-        # x = (self.relu(x[0]), self.relu(x[1]))
-        # x = (self.gc2_1(x[0], adj_cd), self.gc2_2(x[1], adj_emb))
-        # x = (x[0] + x[1]) / 2
+        x = (self.gc1_1(x, adj_cd), self.gc1_2(x, adj_emb), self.gc1_3(x, adj_all))
+        x = (self.relu(x[0]), self.relu(x[1]), self.relu(x[2]))
+        x = (self.gc2_1(x[0], adj_cd), self.gc2_2(x[1], adj_emb), self.gc2_3(x[2], adj_emb))
+        x = (x[0] + x[1] + x[2]) / 3
 
-        x = self.gc1_1(x, adj_cd)
-        x = self.relu(x)
-        x = self.gc2_1(x, adj_cd)
+        # x = self.gc1_1(x, adj_cd)
+        # x = self.relu(x)
+        # x = self.gc2_1(x, adj_cd)
 
-        # x = x * images.unsqueeze(1).double()
-        # x = self.out(x)
+        # cd_loss = images.unsqueeze(1).double()
+        # cd_loss = self.out(cd_loss)
 
-        # x_ = self.attn(images.unsqueeze(1).double(), x, x)
-        # x_ = torch.mean((x_ - images.unsqueeze(1).double()) ** 2 / 2048)
-        # new_loss = self.attn(images.unsqueeze(1).double(), x, x)
-        # new_loss = torch.cat((new_loss.squeeze(1), images.double()), -1)
-        # new_loss = self.out(new_loss)
+        cd_loss = self.attn(images.unsqueeze(1).double(), x, x)
+        cd_loss = torch.mean((cd_loss - images.unsqueeze(1).double()) ** 2 / 2048)
+        new_loss = self.attn(images.unsqueeze(1).double(), x, x)
+        new_loss = torch.cat((new_loss.squeeze(1), images.double()), -1)
+        new_loss = self.out(new_loss)
 
         x = torch.matmul(x, images.unsqueeze(-1).double())
         x = x * label_mask.ceil()
@@ -84,7 +86,7 @@ class MLGCN(nn.Module):
         # label_mask = (1 / label_mask) ** 0.25 / 2
         # x = torch.clamp(x * label_mask.squeeze(-1), max=1)
 
-        return x
+        return x, new_loss, cd_loss
 
 
 class GraphConvolution(nn.Module):
