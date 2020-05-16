@@ -172,3 +172,9 @@ def load_emb(path):
     emb = pickle.load(open(path, 'rb'))
     emb = torch.from_numpy(emb).cuda()
     return emb
+
+
+def load_add(path):
+    emb = pickle.load(open(path, 'rb'))
+    emb = torch.from_numpy(emb).cuda()
+    return emb

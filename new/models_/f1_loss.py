@@ -1,6 +1,7 @@
 import torch
 import torch.nn.functional as f
 from torch import nn
+from utils import *
 
 
 def f1_loss(predict, label):
@@ -16,14 +17,17 @@ def f1_loss(predict, label):
 
 
 class F1Score(object):
-    def __init__(self, t):
+    def __init__(self, t, add=False):
         self.t = float(t)
         self.tp = torch.zeros(374).cuda()
         self.fp = torch.zeros(374).cuda()
         self.fn = torch.zeros(374).cuda()
         self.best_f1 = 0
+        self.add_flag = add
+        if add:
+            self.add = load_add("../corel_5k/add_label.pkl")
 
-    def update(self, predict, label):
+    def update(self, predict, label, cds):
         # label_ = torch.sum(label, dim=-1)
         x = torch.zeros_like(predict)
         # for i in range(x.size(0)):
@@ -33,6 +37,11 @@ class F1Score(object):
         #             x[i][j] = 1
         x[torch.where(predict > self.t)] = 1
         predict = x
+
+        if self.add_flag:
+            new = self.add[cds]
+            predict += new
+            predict = torch.clamp(predict, max=1)
 
         self.tp += torch.sum(label * predict, dim=0)
         self.fp += torch.sum((1 - label) * predict, dim=0)

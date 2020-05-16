@@ -218,10 +218,74 @@ def gen_label_mask():
         pickle.dump(label_mask, f, protocol=pickle.HIGHEST_PROTOCOL)
 
 
+def gen_add_label():
+    add_label = np.zeros((50, 374))
+    info_labels = {}
+    train_path = "../corel_5k/labels/training_label"
+    test_path = "../corel_5k/labels/test_label"
+    with open(train_path, "r") as f:
+        label = f.readline()
+        while label:
+            label = label.split()
+            info_labels[label[0]] = []
+            for i in range(1, len(label)):
+                info_labels[label[0]].append(int(label[i]))
+            label = f.readline()
+    with open(test_path, "r") as f:
+        label = f.readline()
+        while label:
+            label = label.split()
+            info_labels[label[0]] = []
+            for i in range(1, len(label)):
+                info_labels[label[0]].append(int(label[i]))
+            label = f.readline()
+
+    label_of_cd = {}
+    for i in range(50):
+        label_of_cd[i] = {}
+    cd_of_label = {}
+    for i in range(374):
+        cd_of_label[i] = {}
+
+    class_idx = 0
+    path = "../corel_5k/images/"
+    path_list = os.listdir(path)
+    path_list.sort()
+    for filename in path_list:
+        class_path = os.path.join(path, filename)
+        class_list = os.listdir(class_path)
+        for img_name in class_list:
+            idx = img_name[:-5]
+            if idx in info_labels:
+                for i in info_labels[idx]:
+                    i_ = i - 1
+                    if i_ in label_of_cd[class_idx]:
+                        label_of_cd[class_idx][i_] += 1
+                    else:
+                        label_of_cd[class_idx][i_] = 1
+                    if class_idx in cd_of_label[i_]:
+                        cd_of_label[i_][class_idx] += 1
+                    else:
+                        cd_of_label[i_][class_idx] = 1
+        class_idx += 1
+
+    label_mask = np.zeros((50, 374))
+    for cd, v in label_of_cd.items():
+        for label, count in v.items():
+            if count < 5:
+                continue
+            if count > 60:
+                add_label[cd, label] = 1
+
+    with open("../corel_5k/add_label.pkl", "wb+") as f:
+        pickle.dump(label_mask, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+
 if __name__ == '__main__':
     # gen_adj()
     # gen_emb()
     # heat_map()
     # analysis_occur()
-    gen_label_mask()
+    # gen_label_mask()
     # gen_cd_adj()
+    gen_add_label()
