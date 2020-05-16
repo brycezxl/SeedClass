@@ -22,7 +22,9 @@ class MLGCN(nn.Module):
         self.image_fc = nn.Linear(2048, in_channel)
         self.fc = nn.Linear(in_channel * 3, in_channel).double()
         self.cd_emb = nn.Embedding(50, in_channel)
-        self.adj = load_cd_adj(num_classes, t).cuda()
+
+        self.adj = Parameter(load_adj(num_classes, t, adj_path), requires_grad=True)
+        # self.adj = load_cd_adj(num_classes, t).cuda()
 
         self.label_mask = load_label_mask(mask_path)
         self.words = load_emb(emb_path)
@@ -43,8 +45,9 @@ class MLGCN(nn.Module):
             x * self.cd_emb(cds).unsqueeze(-2),
         ), dim=-1))
 
-        adj = self.adj[cds]
-        adj = gen_cd_adj(adj)
+        # adj = self.adj[cds]
+        # adj = gen_cd_adj(adj)
+        adj = gen_adj(self.adj)
 
         x = self.gc1(x, adj)
         x = self.relu(x)
@@ -53,15 +56,16 @@ class MLGCN(nn.Module):
         # x = x * images.unsqueeze(1).double()
         # x = self.out(x)
 
-        x_ = self.attn(images.unsqueeze(1).double(), x, x)
-        x_ = torch.mean((x_ - images.unsqueeze(1).double()) ** 2 / 2048)
+        # x_ = self.attn(images.unsqueeze(1).double(), x, x)
+        # x_ = torch.mean((x_ - images.unsqueeze(1).double()) ** 2 / 2048)
 
         x = torch.matmul(x, images.unsqueeze(-1).double())
         x = x * label_mask
         x[torch.where(label_mask == 0)] += -1e10
         x = torch.sigmoid(x.squeeze(-1))
 
-        return x, x_
+        # return x, x_
+        return x
 
 
 class GraphConvolution(nn.Module):
