@@ -50,7 +50,7 @@ class MLGCN(nn.Module):
         adj_cd = self.adj_cd[cds]
         adj_cd = gen_cd_adj(adj_cd)
         adj_emb = torch.matmul(x, x.transpose(-1, -2))
-        adj_emb = f.softmax(adj_emb, -1)
+        adj_emb = adj_emb / torch.sum(adj_emb, -1).unsqueeze(-1)
         adj_emb = gen_cd_adj(adj_emb)
 
         x = (self.gc1_1(x, adj_cd), self.gc1_2(x, adj_emb))
