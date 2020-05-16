@@ -131,6 +131,8 @@ def analysis_occur():
     total2 = np.sum(num)
     print(total1, total2, 374 - count)
     plt.plot([i * 10 for i in range(40)], total_occur)
+    plt.xlabel("occur times")
+    plt.ylabel("edge num")
     plt.xlim(xmin=0)
     plt.ylim(ymin=0)
     plt.show()
@@ -191,17 +193,25 @@ def gen_label_mask():
     for cd, v in label_of_cd.items():
         total = 0
         n = 0
+        n_list = []
         n_ = 0
         t_ = 0
         for label, count in v.items():
             total += count
             n += 1
         for label, count in v.items():
-            if count < 5:
-                continue
+            # if count < 5:
+            #     continue
             n_ += 1
             t_ += count
             label_mask[cd][label] = count
+            n_list.append(count)
+
+        plt.xlabel("occur times")
+        plt.ylabel("edge num")
+        plt.hist(sorted(n_list, reverse=True), bins=50)
+
+        plt.show()
         print(t_, total, n, n_)
         label_mask[cd] = label_mask[cd] / total
     with open(label_mask_path, "wb+") as f:
