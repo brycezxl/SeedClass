@@ -53,12 +53,15 @@ class MLGCN(nn.Module):
         # adj_emb = torch.clamp(adj_emb / torch.max(adj_emb, -1)[0].unsqueeze(-1), min=0, max=1)
         # adj_emb = gen_cd_adj(adj_emb)
 
-        adj_emb = gen_adj(self.adj_all)
+        # adj_emb = gen_adj(self.adj_all)
 
-        x = (self.gc1_1(x, adj_cd), self.gc1_2(x, adj_emb))
-        x = (self.relu(x[0]), self.relu(x[1]))
-        x = (self.gc2_1(x[0], adj_cd), self.gc2_2(x[1], adj_emb))
-        x = (x[0] + x[1]) / 2
+        # x = (self.gc1_1(x, adj_cd), self.gc1_2(x, adj_emb))
+        # x = (self.relu(x[0]), self.relu(x[1]))
+        # x = (self.gc2_1(x[0], adj_cd), self.gc2_2(x[1], adj_emb))
+        # x = (x[0] + x[1]) / 2
+        x = self.gc1_1(x, adj_cd)
+        x = self.relu(x)
+        x = self.gc2_1(x, adj_cd)
 
         # x = x * images.unsqueeze(1).double()
         # x = self.out(x)
@@ -67,11 +70,12 @@ class MLGCN(nn.Module):
         # x_ = torch.mean((x_ - images.unsqueeze(1).double()) ** 2 / 2048)
 
         x = torch.matmul(x, images.unsqueeze(-1).double())
+        label_mask[torch.where(label_mask == 0)] = 1e30
+        label_mask = torch.clamp(1 / label_mask, max=10)
         x = x * label_mask.ceil()
         x[torch.where(label_mask == 0)] += -1e10
         x = torch.sigmoid(x.squeeze(-1))
 
-        # return x, x_
         return x
 
 
