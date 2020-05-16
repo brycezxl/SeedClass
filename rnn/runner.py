@@ -35,7 +35,7 @@ class Runner:
 
     def _build_model(self):
         self.model = MLGCN(args=self.args, num_classes=374, t=0.05, adj_path='../corel_5k/adj.pkl',
-                           mask_path='../corel_5k/label_mask.pkl', emb_path='../corel_5k/word2vec.pkl',
+                           mask_path='../corel_5k/rnn_label_mask.pkl', emb_path='../corel_5k/word2vec.pkl',
                            pre_trained=self.args.pretrain)
 
         self.device = torch.device('cuda:0')

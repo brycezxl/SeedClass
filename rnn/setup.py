@@ -186,7 +186,7 @@ def gen_label_mask():
                         cd_of_label[i_][class_idx] = 1
         class_idx += 1
 
-    label_mask_path = "../corel_5k/label_mask.pkl"
+    label_mask_path = "../corel_5k/rnn_label_mask.pkl"
     label_mask = np.zeros((50, 374))
     for cd, v in label_of_cd.items():
         total = 0
@@ -197,8 +197,8 @@ def gen_label_mask():
             total += count
             n += 1
         for label, count in v.items():
-            if count < 5:
-                continue
+            # if count < 5:
+            #     continue
             n_ += 1
             t_ += count
             label_mask[cd][label] = count
