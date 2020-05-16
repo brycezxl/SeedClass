@@ -16,43 +16,45 @@ class MLGCN(nn.Module):
 
         # self.conv = ResNet(pre_trained=pre_trained)
         self.conv = AlexNet()
-        self.gc1 = GraphConvolution(in_channel, in_channel)
-        self.gc2 = GraphConvolution(in_channel, in_channel)
+        self.gc1 = GraphConvolution(in_channel, 1024)
+        self.gc2 = GraphConvolution(1024, 2048)
         self.relu = nn.LeakyReLU(0.2)
         self.image_fc = nn.Linear(2048, in_channel)
         self.fc = nn.Linear(in_channel * 3, in_channel).double()
         self.cd_emb = nn.Embedding(50, in_channel)
         self.adj = load_cd_adj(num_classes, t).cuda()
-        self.fc1 = nn.Linear(in_channel * 3, in_channel)
+        self.fc1 = nn.Linear(2048 * 3, 2048)
+        self.fc2 = nn.Linear(in_channel, 2048)
 
         self.attn = Attention(args).double()
 
         self.label_mask = load_label_mask(mask_path)
         self.words = load_emb(emb_path)
-        self.rnn = nn.LSTMCell(in_channel, in_channel)
+        self.rnn = nn.LSTMCell(2048, 2048)
+        self.out = nn.Linear(2048, 374)
 
     def forward(self, images, cds):
         images = self.conv(images)
         images = images.view(images.size(0), -1)
-        images = self.image_fc(images)
 
         label_mask = self.label_mask[cds].unsqueeze(-1)
-        words = self.words * label_mask.ceil()
+        x = self.words * label_mask.ceil()
         cds_emb = self.cd_emb(cds)
-        words = self.fc(torch.cat((
-            words,
-            words * images.unsqueeze(-2),
-            words * cds_emb.unsqueeze(-2),
+        x = self.fc(torch.cat((
+            x,
+            x * self.image_fc(images).unsqueeze(-2),
+            x * cds_emb.unsqueeze(-2),
         ), dim=-1))
 
         adj = self.adj[cds]
         adj = gen_cd_adj(adj)
 
-        words = self.gc1(words, adj)
-        words = self.relu(words)
-        words = self.gc2(words, adj).float()
+        x = self.gc1(x, adj)
+        x = self.relu(x)
+        x = self.gc2(x, adj).float()
 
-        x_ = self.attn(images.unsqueeze(1), words, words).squeeze(1)
+        cds_emb = self.fc2(cds_emb)
+        x_ = self.attn(images.unsqueeze(1), x, x).squeeze(1)
         x_ = self.fc1(torch.cat((
             x_,
             images,
@@ -64,14 +66,19 @@ class MLGCN(nn.Module):
         output = []
         for i in range(5):
             hx, cx = self.rnn(x_, (hx, cx))
-            result = torch.matmul(words, hx.unsqueeze(-1)).squeeze(-1)
-            # result[torch.where(label_mask.squeeze(-1) == 0)] = -1
+            result = torch.matmul(x, hx.unsqueeze(-1)).squeeze(-1)
+            result[torch.where(label_mask.squeeze(-1) == 0)] = -1
             output.append(result)
             result_idx = torch.argmax(result, dim=-1)
             x_new = torch.zeros_like(x_)
             for k in range(x_.size(0)):
-                x_new[k, :] = words[k, result_idx[k], :]
+                x_new[k, :] = x[k, result_idx[k], :]
             x_ = x_new
+            x_ = self.fc1(torch.cat((
+                x_,
+                images,
+                cds_emb,
+            ), dim=-1))
         return output
 
     def get_config_optim(self, lr, lrp):
