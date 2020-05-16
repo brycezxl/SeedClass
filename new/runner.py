@@ -49,9 +49,9 @@ class Runner:
         self.ce = nn.CrossEntropyLoss()
         self.mse = nn.MSELoss()
 
-        self.f1_score_2 = F1Score2()
-        self.f1_score_4 = F1Score1()
-        self.f1_score_6 = F1Score05()
+        self.f1_score_03 = F1Score(0.03)
+        self.f1_score_05 = F1Score(0.05)
+        self.f1_score_07 = F1Score(0.07)
         self.analysis_meter = AnalysisMeter()
 
     def train(self):
@@ -76,8 +76,9 @@ class Runner:
             cds = cds.to(self.device)
             self.optimizer.zero_grad()
             # outputs, cd_ = self.model(images, cds)
-            outputs = self.model(images, cds)
+            outputs, l_ = self.model(images, cds)
             loss = self.bce(outputs, labels)
+            loss += l_ * 0.05
             # loss += self.mse(o, o_)
             # loss += self.ce(cd_, cds) * 0.01
             # loss += self.f1_loss(outputs, labels) / 4
@@ -103,15 +104,16 @@ class Runner:
                     # outputs = self.model(images, cds)
                     outputs = self.model(images, cds)
                     loss = self.bce(outputs, labels)
-                    self.f1_score_2.update(outputs, labels)
-                    self.f1_score_4.update(outputs, labels)
-                    self.f1_score_6.update(outputs, labels)
+                    self.f1_score_03.update(outputs, labels)
+                    self.f1_score_05.update(outputs, labels)
+                    self.f1_score_07.update(outputs, labels)
                     loss_meter.update(loss.item())
                     # if self.f1_score.best_f1 > 0.6:
                     #     self.analysis_meter.difficult_image(outputs, labels, idx)
                 print('Test Loss: %.4f | F1: %.4f %.4f %.4f | Best: %s' % (
-                    loss_meter.avg, self.f1_score_2.get_f1()
-                    , self.f1_score_4.get_f1(), self.f1_score_6.get_f1(), 'True' if self.f1_score_2.best() else 'False'
+                    loss_meter.avg, self.f1_score_03.get_f1()
+                    , self.f1_score_05.get_f1(), self.f1_score_07.get_f1(),
+                    'True' if self.f1_score_05.best() else 'False'
                 ))
                 loss_meter.reset()
-                self.f1_score_2.reset()
+                self.f1_score_05.reset()

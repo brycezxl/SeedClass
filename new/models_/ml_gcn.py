@@ -27,7 +27,8 @@ class MLGCN(nn.Module):
         self.label_mask = load_label_mask(mask_path)
         self.words = load_emb(emb_path)
 
-        self.out = nn.Linear(2048, 1).double()
+        self.attn = Attention(args).double()
+        # self.out = nn.Linear(2048, 1).double()
 
     def forward(self, images, cds):
         # images = self.conv(images)
@@ -49,13 +50,18 @@ class MLGCN(nn.Module):
         x = self.relu(x)
         x = self.gc2(x, adj)
 
-        x = x * images.unsqueeze(1).double()
-        x = self.out(x)
+        # x = x * images.unsqueeze(1).double()
+        # x = self.out(x)
+
+        x_ = self.attn(images.unsqueeze(1).double(), x, x)
+        x_ = torch.sum((x_ - images.unsqueeze(1).double()) ** 2 / 2048)
+
+        x = torch.matmul(x, images.unsqueeze(-1).double())
         x = x * label_mask
         x[torch.where(label_mask == 0)] += -1e10
         x = torch.sigmoid(x.squeeze(-1))
 
-        return x
+        return x, x_
 
 
 class GraphConvolution(nn.Module):
