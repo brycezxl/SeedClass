@@ -29,6 +29,6 @@ class Model(nn.Module):
 
     def get_config_optim(self, lr, lrp):
         return [
-                {'params': self.conv.parameters(), 'lr': lr * lrp},
+                {'params': self.conv.parameters(), 'lr': lr * lrp if self.args.pretrain else lr},
                 {'params': self.net.parameters(), 'lr': lr},
                 ]
