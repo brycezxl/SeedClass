@@ -81,7 +81,8 @@ class Runner:
             # outputs, cd_ = self.model(images, cds)
             outputs, l_ = self.model(images, cds)
             loss = self.bce(outputs, labels)
-            loss += l_.cuda() * 0.05
+            loss += self.ce(l_, cds) * 0.01
+            # loss += l_.cuda() * 0.05
             # loss += self.f1_loss(outputs, labels) / 4
             loss.backward(loss)
             self.optimizer.step()
