@@ -200,18 +200,18 @@ def gen_label_mask():
             total += count
             n += 1
         for label, count in v.items():
-            # if count < 5:
-            #     continue
+            if count < 5:
+                continue
             n_ += 1
             t_ += count
             label_mask[cd][label] = count
             n_list.append(count)
 
-        plt.xlabel("occur times")
-        plt.ylabel("edge num")
-        plt.hist(sorted(n_list, reverse=True), bins=50)
+        # plt.xlabel("occur times")
+        # plt.ylabel("edge num")
+        # plt.hist(sorted(n_list, reverse=True), bins=50)
 
-        plt.show()
+        # plt.show()
         print(t_, total, n, n_)
         label_mask[cd] = label_mask[cd] / total
     with open(label_mask_path, "wb+") as f:

@@ -16,15 +16,17 @@ class MLGCN(nn.Module):
 
         # self.conv = ResNet(pre_trained=pre_trained)
         # self.conv = AlexNet()
-        self.gc1 = GraphConvolution(in_channel, 1024)
-        self.gc2 = GraphConvolution(1024, 2048)
+        self.gc1_1 = GraphConvolution(in_channel, 512)
+        self.gc1_2 = GraphConvolution(in_channel, 512)
+        self.gc2_1 = GraphConvolution(512, 1024)
+        self.gc2_2 = GraphConvolution(512, 1024)
         self.relu = nn.LeakyReLU(0.2)
         self.image_fc = nn.Linear(2048, in_channel)
         self.fc = nn.Linear(in_channel * 3, in_channel).double()
         self.cd_emb = nn.Embedding(50, in_channel)
 
-        # self.adj = Parameter(load_adj(num_classes, t, adj_path), requires_grad=True)
-        self.adj = load_cd_adj(num_classes, t).cuda()
+        self.adj_all = Parameter(load_adj(num_classes, t, adj_path), requires_grad=True)
+        self.adj_cd = load_cd_adj(num_classes, t).cuda()
 
         self.label_mask = load_label_mask(mask_path)
         self.words = load_emb(emb_path)
@@ -45,13 +47,14 @@ class MLGCN(nn.Module):
             x * self.cd_emb(cds).unsqueeze(-2),
         ), dim=-1))
 
-        adj = self.adj[cds]
-        adj = gen_cd_adj(adj)
-        # adj = gen_adj(self.adj)
+        adj_cd = self.adj_cd[cds]
+        adj_cd = gen_cd_adj(adj_cd)
+        adj_all = gen_adj(self.adj_all)
 
-        x = self.gc1(x, adj)
-        x = self.relu(x)
-        x = self.gc2(x, adj)
+        x = (self.gc1_1(x, adj_cd), self.gc1_2(x, adj_all))
+        x = (self.relu(x[0]), self.relu(x[1]))
+        x = (self.gc2_1(x[0], adj_cd), self.gc2_2(x[1], adj_all))
+        x = torch.cat((x[0], x[1]), -1)
 
         # x = x * images.unsqueeze(1).double()
         # x = self.out(x)
