@@ -74,6 +74,7 @@ class MLGCN(nn.Module):
             for k in range(x_.size(0)):
                 x_new[k, :] = x[k, result_idx[k], :]
             x_ = x_new
+            x_ = self.attn(x_.unsqueeze(1), x, x).squeeze(1)
             x_ = self.fc1(torch.cat((
                 x_,
                 images,
