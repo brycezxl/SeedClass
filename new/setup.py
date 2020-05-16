@@ -274,7 +274,7 @@ def gen_add_label():
         for label, count in v.items():
             if count < 5:
                 continue
-            if count > 60:
+            if count > 40:
                 add_label[cd, label] = 1
 
     with open("../corel_5k/add_label.pkl", "wb+") as f:

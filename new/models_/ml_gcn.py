@@ -25,7 +25,7 @@ class MLGCN(nn.Module):
         self.fc = nn.Linear(in_channel * 3, in_channel).double()
         self.cd_emb = nn.Embedding(50, in_channel)
 
-        self.adj_all = Parameter(load_adj(num_classes, t, adj_path), requires_grad=True)
+        # self.adj_all = Parameter(load_adj(num_classes, t, adj_path), requires_grad=True)
         self.adj_cd = load_cd_adj(num_classes, t).cuda()
 
         self.label_mask = load_label_mask(mask_path)
@@ -49,11 +49,13 @@ class MLGCN(nn.Module):
 
         adj_cd = self.adj_cd[cds]
         adj_cd = gen_cd_adj(adj_cd)
-        adj_all = gen_adj(self.adj_all)
+        adj_emb = torch.matmul(x, x.transpose(-1, -2))
+        adj_emb = f.softmax(adj_emb, -1)
+        adj_emb = gen_cd_adj(adj_emb)
 
-        x = (self.gc1_1(x, adj_cd), self.gc1_2(x, adj_all))
+        x = (self.gc1_1(x, adj_cd), self.gc1_2(x, adj_emb))
         x = (self.relu(x[0]), self.relu(x[1]))
-        x = (self.gc2_1(x[0], adj_cd), self.gc2_2(x[1], adj_all))
+        x = (self.gc2_1(x[0], adj_cd), self.gc2_2(x[1], adj_emb))
         x = torch.cat((x[0], x[1]), -1)
 
         # x = x * images.unsqueeze(1).double()
