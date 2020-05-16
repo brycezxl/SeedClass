@@ -50,11 +50,8 @@ class Runner:
         self.mse = nn.MSELoss()
 
         self.f1_score_05 = F1Score(0.05)
-        self.f1_score_05_add = F1Score(0.05, True)
         self.f1_score_1 = F1Score(0.1)
-        self.f1_score_1_add = F1Score(0.1, True)
         self.f1_score_2 = F1Score(0.2)
-        self.f1_score_2_add = F1Score(0.2, True)
         self.analysis_meter = AnalysisMeter()
 
     def train(self):
@@ -62,9 +59,6 @@ class Runner:
             os.makedirs(self.args.model_saved_path)
         for epoch in range(1, self.args.max_num_epochs + 1):
             self._train_one_epoch(epoch)
-            # path = os.path.join(self.args.model_saved_path, 'model-%d' % epoch)
-            # torch.save(self.model.state_dict(), path)
-            # logging.info('model saved to %s' % path)
             self.eval()
         # self.analysis_meter.show_difficult_image()
         logging.info('Done.')
@@ -79,9 +73,9 @@ class Runner:
             cds = cds.to(self.device)
             self.optimizer.zero_grad()
             # outputs, cd_ = self.model(images, cds)
-            outputs, l_ = self.model(images, cds)
+            outputs = self.model(images, cds)
             loss = self.bce(outputs, labels)
-            loss += self.ce(l_, cds) * 0.01
+            # loss += self.ce(l_, cds) * 0.01
             # loss += l_.cuda() * 0.05
             # loss += self.f1_loss(outputs, labels) / 4
             loss.backward(loss)
@@ -103,25 +97,36 @@ class Runner:
                     images = images.to(self.device)
                     labels = labels.to(self.device)
                     cds = cds.to(self.device)
-                    outputs, _ = self.model(images, cds)
+                    outputs = self.model(images, cds)
                     loss = self.bce(outputs, labels)
 
-                    self.f1_score_05_add.update(outputs, labels, cds)
                     self.f1_score_05.update(outputs, labels, cds)
-                    self.f1_score_1_add.update(outputs, labels, cds)
                     self.f1_score_1.update(outputs, labels, cds)
-                    self.f1_score_2_add.update(outputs, labels, cds)
                     self.f1_score_2.update(outputs, labels, cds)
 
                     loss_meter.update(loss.item())
                     # if self.f1_score.best_f1 > 0.6:
                     #     self.analysis_meter.difficult_image(outputs, labels, idx)
-                print('Test Loss: %.4f | F1: %.4f %.4f %.4f %.4f %.4f %.4f | Best: %s' % (
+                print('Test Loss: %.4f | F1: %.4f %.4f %.4f | Best: %s' % (
                     loss_meter.avg,
-                    self.f1_score_05.get_f1(), self.f1_score_05_add.get_f1(),
-                    self.f1_score_1.get_f1(), self.f1_score_1_add.get_f1(),
-                    self.f1_score_2.get_f1(), self.f1_score_2_add.get_f1(),
+                    self.f1_score_05.get_f1(),
+                    self.f1_score_1.get_f1(),
+                    self.f1_score_2.get_f1(),
                     'True' if self.f1_score_05.best() else 'False'
                 ))
+                if self.f1_score_05.best():
+                    path = os.path.join(self.args.model_saved_path)
+                    torch.save(self.model.state_dict(), path)
+                    logging.info('model saved to %s' % path)
                 loss_meter.reset()
                 self.f1_score_05.reset()
+
+    def demo(self):
+        data = Corel(train=True)
+        self.model.eval()
+        with torch.no_grad():
+            images, cds = data.demo(self.args.demo_path, self.args.demo_class)
+            images = images.to(self.device)
+            cds = cds.to(self.device)
+            outputs, _ = self.model(images, cds)
+            print(outputs[torch.where(outputs > 0.05)])

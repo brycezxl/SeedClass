@@ -26,6 +26,10 @@ def parse_args():
                         help='learning rate')
     parser.add_argument('--res', action='store_true', default=False,
                         help='train the model')
+    parser.add_argument('--demo-path', type=str, default='results/model',
+                        help='')
+    parser.add_argument('--demo-class', type=int, default=0,
+                        help='')
     return parser.parse_args()
 
 

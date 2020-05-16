@@ -50,11 +50,11 @@ class MLGCN(nn.Module):
         adj_cd = self.adj_cd[cds]
         adj_cd = gen_cd_adj(adj_cd)
 
-        adj_emb = torch.matmul(x, x.transpose(-1, -2))
-        adj_emb = torch.sigmoid(adj_emb)
-        adj_emb = gen_cd_adj(adj_emb)
+        # adj_emb = torch.matmul(x, x.transpose(-1, -2))
+        # adj_emb = torch.sigmoid(adj_emb)
+        # adj_emb = gen_cd_adj(adj_emb)
 
-        x = x * label_mask.ceil()
+        # x = x * label_mask.ceil()
         # adj_emb = gen_adj(self.adj_all)
 
         # x = (self.gc1_1(x, adj_cd), self.gc1_2(x, adj_emb))
@@ -71,9 +71,9 @@ class MLGCN(nn.Module):
 
         # x_ = self.attn(images.unsqueeze(1).double(), x, x)
         # x_ = torch.mean((x_ - images.unsqueeze(1).double()) ** 2 / 2048)
-        new_loss = self.attn(images.unsqueeze(1).double(), x, x)
-        new_loss = torch.cat((new_loss.squeeze(1), images.double()), -1)
-        new_loss = self.out(new_loss)
+        # new_loss = self.attn(images.unsqueeze(1).double(), x, x)
+        # new_loss = torch.cat((new_loss.squeeze(1), images.double()), -1)
+        # new_loss = self.out(new_loss)
 
         x = torch.matmul(x, images.unsqueeze(-1).double())
         x = x * label_mask.ceil()
@@ -84,7 +84,7 @@ class MLGCN(nn.Module):
         # label_mask = (1 / label_mask) ** 0.25 / 2
         # x = torch.clamp(x * label_mask.squeeze(-1), max=1)
 
-        return x, new_loss
+        return x
 
 
 class GraphConvolution(nn.Module):

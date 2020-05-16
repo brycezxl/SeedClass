@@ -61,6 +61,11 @@ class Corel(data.Dataset):
             class_idx += 1
         random.shuffle(self.data)
 
+    def demo(self, path, class_idx):
+        img = Image.open(path)
+        img = self.transforms_test(img)
+        return img, class_idx
+
     def __getitem__(self, index):
         d = self.data[index]
         img = Image.open(d[0])
