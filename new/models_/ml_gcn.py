@@ -54,7 +54,7 @@ class MLGCN(nn.Module):
         # x = self.out(x)
 
         x_ = self.attn(images.unsqueeze(1).double(), x, x)
-        x_ = torch.sum((x_ - images.unsqueeze(1).double()) ** 2 / 2048)
+        x_ = torch.mean((x_ - images.unsqueeze(1).double()) ** 2 / 2048)
 
         x = torch.matmul(x, images.unsqueeze(-1).double())
         x = x * label_mask
