@@ -66,9 +66,9 @@ class MLGCN(nn.Module):
         output = []
         for i in range(5):
             hx, cx = self.rnn(x_, (hx, cx))
-            result = torch.matmul(x, hx.unsqueeze(-1)).squeeze(-1)
-            result[torch.where(label_mask == 0)] = -1
+            result = self.out(hx)
             output.append(result)
+            result[torch.where(label_mask.squeeze(-1) == 0)] = -1
             result_idx = torch.argmax(result, dim=-1)
             x_new = torch.zeros_like(x_)
             for k in range(x_.size(0)):
